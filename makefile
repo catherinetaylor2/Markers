@@ -5,8 +5,6 @@ ODIR = obj
 
 LIBS = `pkg-config opencv --libs` -L/usr/local/lib/ -lGLEW -lglfw -lGL -L/usr/lib/x86_64-linux-gnu/ 
 
-
-
 _OBJ =  main.o affineTransform.o
 OBJ = $(patsubst %, $(ODIR)/%, $(_OBJ))
 

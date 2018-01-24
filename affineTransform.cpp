@@ -13,7 +13,6 @@ float randomNumber0to1(){
 float randomNumber0tox(float x){
     return randomNumber0to1() * x ;
 }
-
 float randomNumberatob(float a, float b){
     return (b-a)*randomNumber0to1() + a ;
 }
