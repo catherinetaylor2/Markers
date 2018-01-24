@@ -7,7 +7,7 @@ LIBS = `pkg-config opencv --libs` -L/usr/local/lib/ -lGLEW -lglfw -lGL -L/usr/li
 
 
 
-_OBJ =  transform.o
+_OBJ =  main.o affineTransform.o
 OBJ = $(patsubst %, $(ODIR)/%, $(_OBJ))
 
 $(ODIR)/%.o: %.cpp ;
