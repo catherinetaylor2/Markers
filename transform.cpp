@@ -5,6 +5,14 @@
 
 #define PI 3.141592654f
 
+float randomNumber0to1(){
+    return (float)rand()/RAND_MAX ;
+}
+
+float randomNumber0to360(){
+    return (float)rand()/RAND_MAX * 360.0f ;
+}
+
 cv::Mat getXRotation(float angle){
     cv::Mat R = cv::Mat::zeros(3, 3, CV_32F);
     float angleRad = angle*PI/180.0f;
@@ -59,11 +67,7 @@ cv::Mat getShear(float sxy, float sxz, float syx, float syz, float szx, float sz
 
 int main(){
     cv::Mat Image = cv::imread("OriginalMarker/001.png");
-    cv::Mat R = getXRotation(1.0f);
-    cv::Mat dst;  
-
-    cv::Mat S = getShear(2.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f);
-
+   
     cv::Mat T = cv::Mat::zeros(3,3, CV_32F); //translate to centre of image
     T.at<float>(0,0) = 1.0f;
     T.at<float>(1,1) = 1.0f;
@@ -78,7 +82,17 @@ int main(){
     T2.at<float>(0,2) = Image.cols/2.0f;
     T2.at<float>(1,2) = Image.rows/2.0f;
 
-    cv::warpPerspective(Image, dst, T2*S*T, Image.size(), cv::INTER_CUBIC, cv::BORDER_CONSTANT, cv::Scalar(255, 255, 255));	//set background to white
+    cv::Mat R = getZRotation(randomNumber0to360());
+    cv::Mat dst;  
+
+    cv::Mat S = getShear(2.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f);
+
+   // for(int i=0; i<5;i++)
+    //std::cout<<randomNumber0to360()<<"\n";
+    
+
+
+    cv::warpPerspective(Image, dst, T2*R*T, Image.size(), cv::INTER_CUBIC, cv::BORDER_CONSTANT, cv::Scalar(255, 255, 255));	//set background to white
 
     namedWindow("myWindow", cv::WINDOW_AUTOSIZE);
     char exit_key_press = 0;
