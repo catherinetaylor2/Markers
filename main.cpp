@@ -1,9 +1,17 @@
 #include <iostream>
 #include <cmath>
 #include <string>
+#include <vector>
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "affineTransform.hpp"
+
+cv::Mat getRandomTransform(std::vector<cv::Mat>* transforms, int index){
+    cv::Mat T = (*transforms)[index];
+    std::swap((*transforms)[index],(*transforms).back());
+    (*transforms).pop_back();
+    return T;
+}
 
 int main(int argc, char* argv[]){
 
@@ -41,6 +49,7 @@ int main(int argc, char* argv[]){
         T2.at<float>(1,2) = Image.rows/2.0f;
 
         cv::Mat Rx, Ry, Rz, Scale, Shear, R, dst;
+        std::vector<cv::Mat> Transforms;
 
         for(int j = 0; j < numberOfTransformations; ++j){
 
@@ -50,7 +59,13 @@ int main(int argc, char* argv[]){
             Scale = getScale(0, randomNumberatob(-5,5), randomNumberatob(-5,5));
             Shear = getShear(randomNumberatob(-5,5), 0, randomNumberatob(-5,5), 0, 0, 0);
 
-            R = Shear*Scale*Rx*Ry*Rz;
+            Transforms = {Rx, Ry, Rz, Scale, Shear};
+            R = cv::Mat::eye(3,3, CV_32F);
+
+            for(int k = 4; k>-1; --k){ //multiplies transforms in random order
+                int randomIndex = rand()%(k+1);
+                R *= getRandomTransform(&Transforms, randomIndex);
+            }
             
             cv::warpPerspective(Image, dst, T2*R*T, Image.size(), cv::INTER_CUBIC, cv::BORDER_CONSTANT, cv::Scalar(255, 255, 255));	//set background to white
             std::string filename = "TransformedMarker/" + std::to_string(i) + ".jpg";
