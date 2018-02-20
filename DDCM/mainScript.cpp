@@ -54,7 +54,7 @@ int main(){
         }
     }
 
-    int cluster [contoursThresh.size()];
+    int cluster [ finalContours.size()];
     cluster[0] = 0;
     int counter = 0;    
     float dist, pMax;
@@ -77,35 +77,57 @@ int main(){
         }
     }
 
+
+    std::vector<std::vector< int > > markers(counter + 1);
+    for(int i = 0; i < finalContours.size(); ++i){
+        markers[cluster[i]].push_back(i); //each item contains vector with indices of dots in cluster
+    }
+
+    std::vector<cv::Point2f> markerCentre (counter + 1);
+    cv::Point2f currentCentre; //contains centres of each cluster.
+    for(int i = 0; i < counter + 1; ++i){
+        currentCentre = cv::Point2f(0.0f, 0.0f);
+        for(int j = 0; j < markers[i].size(); ++j){
+            currentCentre += mc[(markers[i])[j]];
+        }
+        currentCentre.x /= markers[i].size();
+        currentCentre.y /= markers[i].size();
+        markerCentre[i] = currentCentre;
+    }
+
     cv::Scalar colour ;
 
-    cv::Mat drawing2 = cv::Mat( imgInput.size(), CV_8UC3 );
-    drawing2.setTo(cv::Scalar(255,255,255));
-    for( int i = 0; i< finalContours.size(); i++ ){
-        if(cluster[i] % 5 == 0){
-            colour = cv::Scalar(255,0,0);
-        }
-        if(cluster[i] % 5 == 1){
-            colour = cv::Scalar(0,255,0);
-        }
-        if(cluster[i] % 5 == 2){
-            colour = cv::Scalar(0,0,255);
-        }
-        if(cluster[i] % 5 == 3){
-            colour = cv::Scalar(255,255,0);
-        }
-        if(cluster[i] % 5 == 4){
-            colour = cv::Scalar(0,0,0);
-        }
-        cv::Scalar color = cv::Scalar( 255, 0, 0);
-        drawContours( drawing2, finalContours, i, colour, 1, 8, hierarchy, 0, cv::Point());
+    // cv::Mat drawing2 = cv::Mat( imgInput.size(), CV_8UC3 );
+    // drawing2.setTo(cv::Scalar(255,255,255));
+    // for( int i = 0; i< finalContours.size(); i++ ){
+    //     if(cluster[i] % 5 == 0){
+    //         colour = cv::Scalar(255,0,0);
+    //     }
+    //     if(cluster[i] % 5 == 1){
+    //         colour = cv::Scalar(0,255,0);
+    //     }
+    //     if(cluster[i] % 5 == 2){
+    //         colour = cv::Scalar(0,0,255);
+    //     }
+    //     if(cluster[i] % 5 == 3){
+    //         colour = cv::Scalar(255,255,0);
+    //     }
+    //     if(cluster[i] % 5 == 4){
+    //         colour = cv::Scalar(0,0,0);
+    //     }
+    //     cv::Scalar color = cv::Scalar( 255, 0, 0);
+    //     drawContours( drawing2, finalContours, i, colour, 1, 8, hierarchy, 0, cv::Point());
  
+    // }
+
+    for(int i = 0; i< counter +1; ++i){
+        circle(imgThresh, markerCentre[i], 30, cv::Scalar(0,0,0), 1, 8, 0 );
     }
     
     namedWindow("myWindow", cv::WINDOW_AUTOSIZE);
     char exit_key_press = 0;
     do {
-        cv::imshow("myWindow", drawing2);
+        cv::imshow("myWindow", imgThresh);
         exit_key_press = cvWaitKey(1);
     }while (exit_key_press != '\x1b');
 
