@@ -226,19 +226,16 @@ int main(){
     std::vector<int> tempVector;
     int adjNo = 0;
     for(int i = 0; i< T.size(); ++i){
-  //    std::cout<<"i "<<i<<"\n";
       if(adjT[i].size() == 3){
         tempList.clear();
         tempVector.clear();
         for(int j = 0 ; j < 3; ++j){
           tempList.push_back((triangleIndices[i])[j]);
-        //  std::cout<<"indices "<<(triangleIndices[i])[j]<<"\n";
         }
         for(int k = 0; k < 3; ++k){
           for(int j = 0 ; j < 3; ++j){
-          tempList.push_back((triangleIndices[(adjT[i])[k]])[j]);
-         // std::cout<<"indices "<<(triangleIndices[(adjT[i])[k]])[j]<<"\n";
-        }
+            tempList.push_back((triangleIndices[(adjT[i])[k]])[j]);
+          }
         }
        
         tempList.sort();
@@ -246,7 +243,6 @@ int main(){
 
         for (std::list<int>::iterator it=tempList.begin(); it!=tempList.end(); ++it){
           tempVector.push_back(markers[*it].size());
-     //  std::cout<<"it "<<markers[*it].size()<<"\n";
         }
         adjNo++;
         indicesT.push_back(tempVector);
