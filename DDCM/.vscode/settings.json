@@ -35,6 +35,17 @@
         "typeinfo": "cpp",
         "utility": "cpp",
         "codecvt": "cpp",
-        "__config": "cpp"
+        "__config": "cpp",
+        "csetjmp": "cpp",
+        "cwctype": "cpp",
+        "cfenv": "cpp",
+        "cinttypes": "cpp",
+        "complex": "cpp",
+        "istream": "cpp",
+        "ostream": "cpp",
+        "scoped_allocator": "cpp",
+        "sstream": "cpp",
+        "streambuf": "cpp",
+        "typeindex": "cpp"
     }
 }
