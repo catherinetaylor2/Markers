@@ -53,6 +53,13 @@ int findIndex(std::vector<cv::Point2f> centres, cv::Point2f P){
   return index;
 }
 
+int findMode(std::vector<int> input){
+  std::vector<int> histogram(input.size(),0);
+  for( int i=0; i<input.size(); ++i )
+    ++histogram[ input[i] ];
+    return std::max_element( histogram.begin(), histogram.end() ) - histogram.begin();
+}
+
 int main(){
 
     std::vector<int> test(6), outputTest(6);
@@ -107,6 +114,7 @@ int main(){
         if((contourArea(contours[i]) < maxContourArea) && (contourArea(contours[i]) > minContourArea)){
             contoursThresh.push_back(contours[i]);
             radius.push_back(sqrt(contourArea(contours[i])/3.1415926f));
+      
        }
     }
 
@@ -250,10 +258,26 @@ int main(){
     }
   
     
-
+    std::vector< std::vector <int> > votes (counter + 1);
     for(int i = 0 ; i < indicesT.size(); ++i){
       outputTest = hashTable[calculateKey(indicesT[i])];
+      for(int j = 0; j<indicesT[i].size(); ++j){
+        (votes[indicesT[i][j]]) = outputTest;
+      }
     }
+
+    // for(int i = 0; i < counter + 1; ++i){
+    //   if(votes[i].size() > 0){
+    //     for(int j = 0; j<votes[i].size(); ++j){
+    //       std::cout<<votes[i][j]<<"\n";
+    //     }
+    //     int vote = findMode(votes[i]);
+    //    // std::cout<<"vote "<<vote<<"\n";
+    //   }
+    // }
+
+
+
   
 
     cv::Scalar colour ;
@@ -276,7 +300,7 @@ int main(){
             colour = cv::Scalar(0,0,0);
         }
         cv::Scalar color = cv::Scalar( 255, 0, 0);
-        drawContours( drawing, finalContours, i, colour, 1, 8, hierarchy, 0, cv::Point());
+        drawContours( drawing, finalContours, i, colour, 2, 8, hierarchy, 0, cv::Point());
         
  
     }
