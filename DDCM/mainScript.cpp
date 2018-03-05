@@ -62,34 +62,34 @@ int findMode(std::vector<int> input){
 
 int main(){
 
-    std::vector<int> test(6), outputTest(6);
-    std::vector <int> IDs (6);
-    IDs = {1,2,3,4,5,8};
-    test = {4,3,4,2,4,3};
+    // std::vector<int> test(6), outputTest(6);
+    // std::vector <int> IDs (6);
+    // IDs = {1,2,3,4,5,8};
+    // test = {4,3,4,2,4,3};
 
-    std::unordered_map <int, std::vector<int> > hashTable;
-    hashTable[calculateKey(test)] = IDs;
+    // std::unordered_map <int, std::vector<int> > hashTable;
+    // hashTable[calculateKey(test)] = IDs;
 
-    std::cout<<"test A0 "<< calculateKey(test)<<"\n";
+    // std::cout<<"test A0 "<< calculateKey(test)<<"\n";
 
-    IDs.clear();
-    test.clear();
+    // IDs.clear();
+    // test.clear();
 
-    IDs = {2,4,5,7,8,9};
-    test = {3,2,4,1,3,1};
-    hashTable[calculateKey(test)] = IDs;
+    // IDs = {2,4,5,7,8,9};
+    // test = {3,2,4,1,3,1};
+    // hashTable[calculateKey(test)] = IDs;
 
-    std::cout<<"test B0 "<< calculateKey(test)<<"\n";
+    // std::cout<<"test B0 "<< calculateKey(test)<<"\n";
 
-    float maxContourArea = 60.0f;
-    float minContourArea = 1.0f;
-    float eMax = 1.0f;
+    float maxContourArea = 200.0f;
+    float minContourArea = 100.0f;
+    float eMax = 0.65f;
     int contourThreshold = 100;
     int gridThreshold = 16;
     int gridWidth = 32;
     float controlParam = 1.0f;
 
-    cv::Mat imgInput = cv::imread("test5.png");
+    cv::Mat imgInput = cv::imread("test6.png");
     cv::cvtColor(imgInput, imgInput, CV_BGR2GRAY);
     cv::Mat imgThresh;
     adaptiveThreshold(imgInput, imgThresh, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY,25,5); //these values can be varied
@@ -111,6 +111,7 @@ int main(){
 
     std::vector<float> radius;
     for( int i = 0; i< contours.size(); i++ ){
+       // std::cout<<"area "<<contourArea(contours[i])<<"\n";
         if((contourArea(contours[i]) < maxContourArea) && (contourArea(contours[i]) > minContourArea)){
             contoursThresh.push_back(contours[i]);
             radius.push_back(sqrt(contourArea(contours[i])/3.1415926f));
@@ -129,7 +130,8 @@ int main(){
     for( int i = 0; i < contoursThresh.size(); i++ ){ 
         mc[i] = cv::Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 ); 
         geometricDeviation[i] =  cv::Point2f( sqrt(mu[i].m20 / mu[i].m00), sqrt(mu[i].m02 / mu[i].m00));
-        eccentricty[i] = ((mu[i].m20 - mu[i].m02)*(mu[i].m20 - mu[i].m02) + 4*mu[i].m11*mu[i].m11)/((mu[i].m20 + mu[i].m02)*(mu[i].m20 + mu[i].m02));
+        eccentricty[i] = ((mu[i].mu20 - mu[i].mu02)*(mu[i].mu20 - mu[i].mu02) + 4*mu[i].mu11*mu[i].mu11)/((mu[i].mu20 + mu[i].mu02)*(mu[i].mu20 + mu[i].mu02));
+   ///     std::cout<<"ECCENTRICITY "<<eccentricty[i]<<"\n";
         if(eccentricty[i]<eMax){
             finalContours.push_back(contoursThresh[i]);
         }
@@ -144,7 +146,7 @@ int main(){
         pMax = radius[i];
         bool clusterFound = false;
         for(int j = i - 1; j > -1; --j){
-            if(!clusterFound){
+            if(!clusterFound){  
                dist = sqrt((mc[i].x - mc[j].x)*(mc[i].x - mc[j].x) + (mc[i].y - mc[j].y)*(mc[i].y - mc[j].y));
                if(dist < pMax*8){
                     cluster[i] = cluster[j];
@@ -178,95 +180,95 @@ int main(){
 
 
     //Delauny triangulation
-    cv::Rect rect(0,0, imgInput.cols, imgInput.rows);
-    cv::Subdiv2D subdiv;
-    subdiv.initDelaunay(rect); 
-    subdiv.insert(markerCentre);
-    std::vector<cv::Vec6f>  T;
+    // cv::Rect rect(0,0, imgInput.cols, imgInput.rows);
+    // cv::Subdiv2D subdiv;
+    // subdiv.initDelaunay(rect); 
+    // subdiv.insert(markerCentre);
+    // std::vector<cv::Vec6f>  T;
 
-    draw_delaunay(drawing, subdiv, cv::Scalar(0,0,0), &T);
+    // draw_delaunay(drawing, subdiv, cv::Scalar(0,0,0), &T);
     
-    cv::Point2f indices[3], indices2[3];
+    // cv::Point2f indices[3], indices2[3];
 
-    std::vector< cv::Vec4f >edgeList ;
-    subdiv.getEdgeList(edgeList);
+    // std::vector< cv::Vec4f >edgeList ;
+    // subdiv.getEdgeList(edgeList);
 
-    std::vector <std::vector <int> > adjT (T.size());
-    std::vector <std::vector <int> > triangleIndices (T.size());
+    // std::vector <std::vector <int> > adjT (T.size());
+    // std::vector <std::vector <int> > triangleIndices (T.size());
 
 
-    for(int i = 0; i< T.size(); ++i){
+    // for(int i = 0; i< T.size(); ++i){
       
-      cv::Vec6f t = T[i];
-      indices[0] = cv::Point2f(t[0], t[1]);
-      indices[1] = cv::Point2f(t[2], t[3]);
-      indices[2] = cv::Point2f(t[4], t[5]);
+    //   cv::Vec6f t = T[i];
+    //   indices[0] = cv::Point2f(t[0], t[1]);
+    //   indices[1] = cv::Point2f(t[2], t[3]);
+    //   indices[2] = cv::Point2f(t[4], t[5]);
 
-      for (int ii = 0; ii < 3; ++ii){
-        (triangleIndices[i]).push_back((findIndex(markerCentre, indices[ii])));
-      }
+    //   for (int ii = 0; ii < 3; ++ii){
+    //     (triangleIndices[i]).push_back((findIndex(markerCentre, indices[ii])));
+    //   }
 
-      for(int j =0 ; j < T.size(); ++j){
-        if(i!=j){
-          cv::Vec6f t2 = T[j];
-          indices2[0] = cv::Point2f(t2[0], t2[1]);
-          indices2[1] = cv::Point2f(t2[2], t2[3]);
-          indices2[2] = cv::Point2f(t2[4], t2[5]);
-          int matchingIndices = 0;
+    //   for(int j =0 ; j < T.size(); ++j){
+    //     if(i!=j){
+    //       cv::Vec6f t2 = T[j];
+    //       indices2[0] = cv::Point2f(t2[0], t2[1]);
+    //       indices2[1] = cv::Point2f(t2[2], t2[3]);
+    //       indices2[2] = cv::Point2f(t2[4], t2[5]);
+    //       int matchingIndices = 0;
 
-          for(int k = 0; k < 3; ++k){
-            for( int l = 0; l < 3; ++l){
-              if(indices[k] == indices2[l]){
-                matchingIndices++;
-              }
-            }
-          }
-          if(matchingIndices == 2){
-            adjT[i].push_back(j);
-          }
+    //       for(int k = 0; k < 3; ++k){
+    //         for( int l = 0; l < 3; ++l){
+    //           if(indices[k] == indices2[l]){
+    //             matchingIndices++;
+    //           }
+    //         }
+    //       }
+    //       if(matchingIndices == 2){
+    //         adjT[i].push_back(j);
+    //       }
 
-        }
-      }
+    //     }
+    //   }
          
-    }
-    std::vector <std::vector<int> > indicesT;
-    std::list<int> tempList;
-    std::vector<int> tempVector;
-    int adjNo = 0;
-    for(int i = 0; i< T.size(); ++i){
-      if(adjT[i].size() == 3){
-        tempList.clear();
-        tempVector.clear();
-        for(int j = 0 ; j < 3; ++j){
-          tempList.push_back((triangleIndices[i])[j]);
-        }
-        for(int k = 0; k < 3; ++k){
-          for(int j = 0 ; j < 3; ++j){
-            tempList.push_back((triangleIndices[(adjT[i])[k]])[j]);
-          }
-        }
+    // }
+    // std::vector <std::vector<int> > indicesT;
+    // std::list<int> tempList;
+    // std::vector<int> tempVector;
+    // int adjNo = 0;
+    // for(int i = 0; i< T.size(); ++i){
+    //   if(adjT[i].size() == 3){
+    //     tempList.clear();
+    //     tempVector.clear();
+    //     for(int j = 0 ; j < 3; ++j){
+    //       tempList.push_back((triangleIndices[i])[j]);
+    //     }
+    //     for(int k = 0; k < 3; ++k){
+    //       for(int j = 0 ; j < 3; ++j){
+    //         tempList.push_back((triangleIndices[(adjT[i])[k]])[j]);
+    //       }
+    //     }
        
-        tempList.sort();
-        tempList.unique();
+    //     tempList.sort();
+    //     tempList.unique();
 
-        for (std::list<int>::iterator it=tempList.begin(); it!=tempList.end(); ++it){
-          tempVector.push_back(markers[*it].size());
-        }
-        adjNo++;
-        indicesT.push_back(tempVector);
-      }
-    }
+    //     for (std::list<int>::iterator it=tempList.begin(); it!=tempList.end(); ++it){
+    //       tempVector.push_back(markers[*it].size());
+    //     }
+    //     adjNo++;
+    //     indicesT.push_back(tempVector);
+    //   }
+    // }
   
     
-    std::vector< std::vector <int> > votes (counter + 1);
-    for(int i = 0 ; i < indicesT.size(); ++i){
-      outputTest = hashTable[calculateKey(indicesT[i])];
-      for(int j = 0; j<indicesT[i].size(); ++j){
-        (votes[indicesT[i][j]]) = outputTest;
-      }
-    }
+    // std::vector< std::vector <int> > votes (counter + 1);
+    // for(int i = 0 ; i < indicesT.size(); ++i){
+    //   outputTest = hashTable[calculateKey(indicesT[i])];
+    //   for(int j = 0; j<indicesT[i].size(); ++j){
+    //     (votes[indicesT[i][j]]) = outputTest;
+    //   }
+    // }
 
-    // for(int i = 0; i < counter + 1; ++i){
+    // for(int i = 0; i < counter + 1; ++i){,
     //   if(votes[i].size() > 0){
     //     for(int j = 0; j<votes[i].size(); ++j){
     //       std::cout<<votes[i][j]<<"\n";
@@ -305,9 +307,9 @@ int main(){
  
     }
 
-    for(int i =0 ; i< T.size(); ++i){
-      std::string str = std::to_string(i);
-      putText(drawing, str, markerCentre[i], cv::FONT_HERSHEY_SIMPLEX,1,cv::Scalar(0,0,0),2, cv::LINE_AA);
+    for(int i =0 ; i< counter + 1; ++i){
+        std::string str = std::to_string(markers[i].size());
+        putText(drawing, str, markerCentre[i], cv::FONT_HERSHEY_SIMPLEX,1,cv::Scalar(0,0,0),2, cv::LINE_AA);
     }
 
     for(int i = 0; i< counter +1; ++i){
