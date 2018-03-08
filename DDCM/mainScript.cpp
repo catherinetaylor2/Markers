@@ -7,25 +7,35 @@
 #include <time.h> // for random
 
 cv::RNG rng(12345);
+#define PI 3.141592654f
 
-static void draw_delaunay( cv::Mat& img, cv::Subdiv2D& subdiv, cv::Scalar delaunay_color, std::vector<cv::Vec6f> *T )
+class DotCluster
 {
+public: 
+	DotCluster(){};
+	DotCluster(int _id, cv::Point2f _position, int numberOfClusters){
+		id = _id;
+		position = _position;
+	}
+	int id;
+	cv::Point2f position;
+};
+
+static void draw_delaunay( cv::Mat& img, cv::Subdiv2D& subdiv, cv::Scalar delaunay_color, std::vector<cv::Vec6f> *T ){
     std::vector<cv::Vec6f> triangleList;
     subdiv.getTriangleList(triangleList);
     std::vector<cv::Point> pt(3);
     cv::Size size = img.size();
     cv::Rect rect(0,0, size.width, size.height);
  
-    for( size_t i = 0; i < triangleList.size(); i++ )
-    {
+    for( size_t i = 0; i < triangleList.size(); i++ ){
         cv::Vec6f t = triangleList[i];
         pt[0] = cv::Point(cvRound(t[0]), cvRound(t[1]));
         pt[1] = cv::Point(cvRound(t[2]), cvRound(t[3]));
         pt[2] = cv::Point(cvRound(t[4]), cvRound(t[5]));
          
         // Draw rectangles completely inside the image.
-        if ( rect.contains(pt[0]) && rect.contains(pt[1]) && rect.contains(pt[2]))
-        {
+        if ( rect.contains(pt[0]) && rect.contains(pt[1]) && rect.contains(pt[2])){
             line(img, pt[0], pt[1], delaunay_color, 1, CV_AA, 0);
             line(img, pt[1], pt[2], delaunay_color, 1, CV_AA, 0);
             line(img, pt[2], pt[0], delaunay_color, 1, CV_AA, 0);
@@ -37,7 +47,7 @@ static void draw_delaunay( cv::Mat& img, cv::Subdiv2D& subdiv, cv::Scalar delaun
 int calculateKey(std::vector<int> numberDots){
     int i = 0;
     for(int j = 0; j < numberDots.size(); ++j){
-        i += (numberDots[j] - 1);
+        i += (numberDots[j] - 1)*pow(3, j-1);
     }
     return i;
 }
@@ -60,98 +70,155 @@ int findMode(std::vector<int> input){
     return std::max_element( histogram.begin(), histogram.end() ) - histogram.begin();
 }
 
+std::vector<int> getPermutation(std::vector<int> input, int permutation){
+    std::vector<int> output;
+    if(permutation % 3 == 0){
+        return input;
+    }
+    else if(permutation % 3 == 1){
+        for(int i = 2; i<input.size(); ++i){
+            output.push_back(input[i]);
+        }
+        for(int i = 0; i <2; ++i){
+            output.push_back(input[i]);
+        }
+        return output;
+    }
+    else{
+        for(int i = 4; i < input.size(); ++i){
+         output.push_back(input[i]);
+        }
+        for(int i = 0; i <4; ++i){
+            output.push_back(input[i]);
+        }
+        return output;
+    }
+
+}
+
 int main(){
 
-    // std::vector<int> test(6), outputTest(6);
-    // std::vector <int> IDs (6);
-    // IDs = {1,2,3,4,5,8};
-    // test = {4,3,4,2,4,3};
+    //INITIALISE THE GRID-----------------------------------------
 
-    // std::unordered_map <int, std::vector<int> > hashTable;
-    // hashTable[calculateKey(test)] = IDs;
+    std::vector<int> test(6), outputTest(6), IDs (6);
+    IDs = {1,2,3,4,5,8};
+    test = {4,3,4,2,4,3};
 
-    // std::cout<<"test A0 "<< calculateKey(test)<<"\n";
+    std::unordered_map <int, std::vector<int> > hashTable;
+    int key;
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
 
-    // IDs.clear();
-    // test.clear();
+    IDs.clear();
+    test.clear();
+    IDs = {2,4,5,7,8,9};
+    test = {3,2,4,1,3,1};
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
 
-    // IDs = {2,4,5,7,8,9};
-    // test = {3,2,4,1,3,1};
-    // hashTable[calculateKey(test)] = IDs;
+    //--------------------------------------------------------
 
-    // std::cout<<"test B0 "<< calculateKey(test)<<"\n";
+
 
     float maxContourArea = 200.0f;
-    float minContourArea = 100.0f;
-    float eMax = 0.65f;
+    float minContourArea = 10.0f;
+    float eMax = 0.1f;
     int contourThreshold = 100;
     int gridThreshold = 16;
     int gridWidth = 32;
     float controlParam = 1.0f;
 
-    cv::Mat imgInput = cv::imread("test6.png");
-    cv::cvtColor(imgInput, imgInput, CV_BGR2GRAY);
-    cv::Mat imgThresh;
-    adaptiveThreshold(imgInput, imgThresh, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY,25,5); //these values can be varied
-
-    cv::Mat canny_edges;
-    blur( imgThresh, imgThresh, cv::Size(3,3));
-
+    cv::Mat imgInput, imgThresh, canny_edges, drawing;
     std::vector<std::vector<cv::Point> > contours, contoursThresh,  finalContours;
     std::vector<cv::Vec4i> hierarchy;
+
+    imgInput = cv::imread("test5.png");
+    cv::cvtColor(imgInput, imgInput, CV_BGR2GRAY);
+    adaptiveThreshold(imgInput, imgThresh, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY,25,5); //these values can be varied
+    blur( imgThresh, imgThresh, cv::Size(3,3));    
     Canny( imgThresh, canny_edges, contourThreshold, contourThreshold*3, 7 , true);
     findContours( imgThresh, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
      
-
-
-  cv::Mat drawing = cv::Mat( imgInput.size(), CV_8UC3 );
-  drawing.setTo(cv::Scalar(255,255,255));
-
-
+    drawing = cv::Mat( imgInput.size(), CV_8UC3 );
+    drawing.setTo(cv::Scalar(255,255,255));
 
     std::vector<float> radius;
-    for( int i = 0; i< contours.size(); i++ ){
-       // std::cout<<"area "<<contourArea(contours[i])<<"\n";
+    int TotalNumberContours = contours.size();
+    for( int i = 0; i< TotalNumberContours; i++ ){
         if((contourArea(contours[i]) < maxContourArea) && (contourArea(contours[i]) > minContourArea)){
             contoursThresh.push_back(contours[i]);
-            radius.push_back(sqrt(contourArea(contours[i])/3.1415926f));
-      
-       }
-    }
+        }
+    } 
 
-    std::vector<cv::Moments> mu(contoursThresh.size() );
-    for( int i = 0; i < contoursThresh.size(); i++ ){ 
+    int NumberOfThreshContours = contoursThresh.size();
+    std::vector<cv::Moments> mu(NumberOfThreshContours);
+    std::vector<cv::Point2f> mc(NumberOfThreshContours);
+    for( int i = 0; i < NumberOfThreshContours; i++ ){ 
         mu[i] = moments( contoursThresh[i], true ); 
     }
-
-    std::vector<cv::Point2f> mc( contoursThresh.size() );
-    std::vector< cv::Point2f> geometricDeviation( contoursThresh.size() );
-    std::vector<float> eccentricty(contoursThresh.size());
-    for( int i = 0; i < contoursThresh.size(); i++ ){ 
+    for( int i = 0; i <  NumberOfThreshContours; i++ ){ 
         mc[i] = cv::Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 ); 
-        geometricDeviation[i] =  cv::Point2f( sqrt(mu[i].m20 / mu[i].m00), sqrt(mu[i].m02 / mu[i].m00));
-        eccentricty[i] = ((mu[i].mu20 - mu[i].mu02)*(mu[i].mu20 - mu[i].mu02) + 4*mu[i].mu11*mu[i].mu11)/((mu[i].mu20 + mu[i].mu02)*(mu[i].mu20 + mu[i].mu02));
-   ///     std::cout<<"ECCENTRICITY "<<eccentricty[i]<<"\n";
-        if(eccentricty[i]<eMax){
-            finalContours.push_back(contoursThresh[i]);
+    }
+
+    std::vector<std::vector <int> > indicesInGrid;
+    std::vector<int> tempGridIndices;
+    int pointsInGrid;
+    for(int i = 0; i < imgInput.cols; i+= gridWidth){
+        pointsInGrid = 0;
+        tempGridIndices.clear();
+        for(int j = 0; j < imgInput.rows; j+= gridWidth){
+            for(int k = 0; k< NumberOfThreshContours; ++k){
+                if((mc[k].x >= i)&&(mc[k].x < i + gridWidth)&&(mc[k].y >= j)&&(mc[k].y < j + gridWidth)){
+                    tempGridIndices.push_back(k);
+                    ++pointsInGrid;
+                }
+            }
+        }
+        if(pointsInGrid < gridThreshold){
+            indicesInGrid.push_back(tempGridIndices);
+        }
+    }
+ 
+    std::vector< cv::Point2f> geometricDeviation( NumberOfThreshContours);
+    std::vector<float> eccentricty(NumberOfThreshContours);
+    int gridIndex;
+    float Eccentricity;
+    std::vector<cv::Point2f> final_mc;
+    for(int i = 0; i < indicesInGrid.size(); ++i){
+        if(indicesInGrid[i].size() > 0){
+            for(int j = 0; j < indicesInGrid[i].size(); ++j){
+                gridIndex = indicesInGrid[i][j];
+                Eccentricity = ((mu[gridIndex].mu20 - mu[gridIndex].mu02)*(mu[gridIndex].mu20 - mu[gridIndex].mu02) + 4*mu[gridIndex].mu11*mu[gridIndex].mu11)/((mu[gridIndex].mu20 + mu[gridIndex].mu02)*(mu[gridIndex].mu20 + mu[gridIndex].mu02));
+                if(Eccentricity < eMax){
+                    finalContours.push_back(contoursThresh[gridIndex]);
+                    eccentricty.push_back(Eccentricity);
+                    radius.push_back(sqrt(contourArea(contoursThresh[gridIndex])/PI));
+                    final_mc.push_back(mc[gridIndex]);
+                }
+            }
         }
     }
 
-    int cluster [ finalContours.size()];
+    int FinalContourNumber = finalContours.size();
+    int cluster [FinalContourNumber];
     cluster[0] = 0;
-    int counter = 0;    
-    float dist, pMax;
-
-    for(int i = 1 ; i < finalContours.size(); ++i){
+    int counter = 0;       
+    float pMax, dist;
+        
+    for(int i = 1 ; i < FinalContourNumber; ++i){
         pMax = radius[i];
         bool clusterFound = false;
         for(int j = i - 1; j > -1; --j){
-            if(!clusterFound){  
-               dist = sqrt((mc[i].x - mc[j].x)*(mc[i].x - mc[j].x) + (mc[i].y - mc[j].y)*(mc[i].y - mc[j].y));
-               if(dist < pMax*8){
+            if(!clusterFound){      
+                dist = sqrt((final_mc[i].x - final_mc[j].x)*(final_mc[i].x - final_mc[j].x) + (final_mc[i].y - final_mc[j].y)*(final_mc[i].y - final_mc[j].y));
+                if(dist < pMax*8){
+                    clusterFound = true;
                     cluster[i] = cluster[j];
-                   clusterFound = true;;
-               }
+                }
             }
         }
         if(!clusterFound){
@@ -160,23 +227,30 @@ int main(){
         }
     }
 
-
     std::vector<std::vector< int > > markers(counter + 1);
-    for(int i = 0; i < finalContours.size(); ++i){
+    for(int i = 0; i < FinalContourNumber; ++i){
         markers[cluster[i]].push_back(i); //each item contains vector with indices of dots in cluster
     }
 
     std::vector<cv::Point2f> markerCentre (counter + 1);
     cv::Point2f currentCentre; //contains centres of each cluster.
+    int  markersSize;
+    std::vector<DotCluster> markerIDs;
+    DotCluster dotCluster;
     for(int i = 0; i < counter + 1; ++i){
         currentCentre = cv::Point2f(0.0f, 0.0f);
-        for(int j = 0; j < markers[i].size(); ++j){
-            currentCentre += mc[(markers[i])[j]];
+        markersSize = markers[i].size();
+        for(int j = 0; j < markersSize; ++j){
+            currentCentre += final_mc[(markers[i])[j]];
         }
-        currentCentre.x /= markers[i].size();
-        currentCentre.y /= markers[i].size();
+        currentCentre.x /= markersSize;
+        currentCentre.y /= markersSize;
         markerCentre[i] = currentCentre;
-    }
+
+        dotCluster.position = markerCentre[i];
+        dotCluster.id = markersSize;
+        markerIDs.push_back(dotCluster);
+    }        
 
 
     //Delauny triangulation
