@@ -335,25 +335,25 @@ int main(){
     int adjNo = 0;
     int triInd [3];
     for(int i = 0; i< T.size(); ++i){
-      if(adjT[i].size() == 3){
-        tempList.clear();
-        tempVector.clear();
-        for(int j = 0 ; j < 3; ++j){
-          tempList.push_back((triangleIndices[i])[j]);
-          tempVector.push_back((triangleIndices[i])[j]); //first 3 terms are middle of edge vertices 
-          triInd[j] = adjT[i][j];
-        }
-        
-        for(int k = 0; k < 3; ++k){
-          for(int j = 0 ; j < 3; ++j){
-            int val = (triangleIndices[(adjT[i])[k]])[j];
-            tempList.push_back((triangleIndices[(adjT[i])[k]])[j]);
-            if((val != tempVector[0]) && (val != tempVector[1]) && (val!= tempVector[2])){
-                tempVector.push_back((triangleIndices[(adjT[i])[k]])[j]);
+        if(adjT[i].size() == 3){
+            tempList.clear();
+            tempVector.clear();
+            for(int j = 0 ; j < 3; ++j){
+                tempList.push_back((triangleIndices[i])[j]);
+                tempVector.push_back((triangleIndices[i])[j]); //first 3 terms are middle of edge vertices 
+                triInd[j] = adjT[i][j];
             }
-          }
-        }
-        indicesT.push_back(getTriangleOrder(tempVector, triInd, triangleIndices));
+
+            for(int k = 0; k < 3; ++k){
+                for(int j = 0 ; j < 3; ++j){
+                    int val = (triangleIndices[(adjT[i])[k]])[j];
+                    tempList.push_back((triangleIndices[(adjT[i])[k]])[j]);
+                    if((val != tempVector[0]) && (val != tempVector[1]) && (val!= tempVector[2])){
+                        tempVector.push_back((triangleIndices[(adjT[i])[k]])[j]);
+                    }
+                }
+            }
+            indicesT.push_back(getTriangleOrder(tempVector, triInd, triangleIndices));
         }
     }
 
