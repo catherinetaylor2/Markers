@@ -96,6 +96,30 @@ std::vector<int> getPermutation(std::vector<int> input, int permutation){
 
 }
 
+std::vector<int> getTriangleOrder(std::vector<int> input, int triangles[3], std::vector <std::vector <int> > triangleIndices){
+    std::vector<int> output;
+    int A, B, t, X, triangle;
+    std::vector<int> T;
+
+    for(int i = 0; i < 3; ++i){
+        A = input[i];
+        B = input[(i+1)%3];
+        for(int j = 0; j < 3; ++j){
+            t = triangles[j];
+            T = triangleIndices[t];
+            if(((A == T[0])||(A == T[1]) ||(A==T[3]))&&((B == T[0])||(B == T[1])|| (B == T[2]))){
+                for(int k = 0; k < 3; ++k){
+                    if((T[k]!=A)&&(T[k]!=B)){
+                        output.push_back(T[k]);
+                    }
+                }
+                output.push_back(B);
+            }
+        }
+    }
+    return output;
+}
+
 int main(){
 
     //INITIALISE THE GRID-----------------------------------------
@@ -253,86 +277,86 @@ int main(){
     }        
 
 
-    //Delauny triangulation
-    // cv::Rect rect(0,0, imgInput.cols, imgInput.rows);
-    // cv::Subdiv2D subdiv;
-    // subdiv.initDelaunay(rect); 
-    // subdiv.insert(markerCentre);
-    // std::vector<cv::Vec6f>  T;
+  //  Delauny triangulation
+    cv::Rect rect(0,0, imgInput.cols, imgInput.rows);
+    cv::Subdiv2D subdiv;
+    subdiv.initDelaunay(rect); 
+    subdiv.insert(markerCentre);
+    std::vector<cv::Vec6f>  T;
 
-    // draw_delaunay(drawing, subdiv, cv::Scalar(0,0,0), &T);
+    draw_delaunay(drawing, subdiv, cv::Scalar(0,0,0), &T);
     
-    // cv::Point2f indices[3], indices2[3];
+    cv::Point2f indices[3], indices2[3];
 
-    // std::vector< cv::Vec4f >edgeList ;
-    // subdiv.getEdgeList(edgeList);
+    std::vector< cv::Vec4f >edgeList ;
+    subdiv.getEdgeList(edgeList);
 
-    // std::vector <std::vector <int> > adjT (T.size());
-    // std::vector <std::vector <int> > triangleIndices (T.size());
+    std::vector <std::vector <int> > adjT (T.size());
+    std::vector <std::vector <int> > triangleIndices (T.size());
 
 
-    // for(int i = 0; i< T.size(); ++i){
+    for(int i = 0; i< T.size(); ++i){
       
-    //   cv::Vec6f t = T[i];
-    //   indices[0] = cv::Point2f(t[0], t[1]);
-    //   indices[1] = cv::Point2f(t[2], t[3]);
-    //   indices[2] = cv::Point2f(t[4], t[5]);
+      cv::Vec6f t = T[i];
+      indices[0] = cv::Point2f(t[0], t[1]);
+      indices[1] = cv::Point2f(t[2], t[3]);
+      indices[2] = cv::Point2f(t[4], t[5]);
 
-    //   for (int ii = 0; ii < 3; ++ii){
-    //     (triangleIndices[i]).push_back((findIndex(markerCentre, indices[ii])));
-    //   }
+      for (int ii = 0; ii < 3; ++ii){
+        (triangleIndices[i]).push_back((findIndex(markerCentre, indices[ii]))); //for triangle i, vertices index in markerCentre can be found
+      }
 
-    //   for(int j =0 ; j < T.size(); ++j){
-    //     if(i!=j){
-    //       cv::Vec6f t2 = T[j];
-    //       indices2[0] = cv::Point2f(t2[0], t2[1]);
-    //       indices2[1] = cv::Point2f(t2[2], t2[3]);
-    //       indices2[2] = cv::Point2f(t2[4], t2[5]);
-    //       int matchingIndices = 0;
+      for(int j =0 ; j < T.size(); ++j){
+        if(i!=j){
+          cv::Vec6f t2 = T[j];
+          indices2[0] = cv::Point2f(t2[0], t2[1]);
+          indices2[1] = cv::Point2f(t2[2], t2[3]);
+          indices2[2] = cv::Point2f(t2[4], t2[5]);
+          int matchingIndices = 0;
 
-    //       for(int k = 0; k < 3; ++k){
-    //         for( int l = 0; l < 3; ++l){
-    //           if(indices[k] == indices2[l]){
-    //             matchingIndices++;
-    //           }
-    //         }
-    //       }
-    //       if(matchingIndices == 2){
-    //         adjT[i].push_back(j);
-    //       }
+          for(int k = 0; k < 3; ++k){
+            for( int l = 0; l < 3; ++l){
+              if(indices[k] == indices2[l]){
+                matchingIndices++;
+              }
+            }
+          }
+          if(matchingIndices == 2){
+            adjT[i].push_back(j);
+          }
 
-    //     }
-    //   }
+        }
+      }
          
-    // }
-    // std::vector <std::vector<int> > indicesT;
-    // std::list<int> tempList;
-    // std::vector<int> tempVector;
-    // int adjNo = 0;
-    // for(int i = 0; i< T.size(); ++i){
-    //   if(adjT[i].size() == 3){
-    //     tempList.clear();
-    //     tempVector.clear();
-    //     for(int j = 0 ; j < 3; ++j){
-    //       tempList.push_back((triangleIndices[i])[j]);
-    //     }
-    //     for(int k = 0; k < 3; ++k){
-    //       for(int j = 0 ; j < 3; ++j){
-    //         tempList.push_back((triangleIndices[(adjT[i])[k]])[j]);
-    //       }
-    //     }
-       
-    //     tempList.sort();
-    //     tempList.unique();
+    }
+    std::vector <std::vector<int> > indicesT;
+    std::list<int> tempList;
+    std::vector<int> tempVector, tempVector2;
+    int adjNo = 0;
+    int triInd [3];
+    for(int i = 0; i< T.size(); ++i){
+      if(adjT[i].size() == 3){
+        tempList.clear();
+        tempVector.clear();
+        for(int j = 0 ; j < 3; ++j){
+          tempList.push_back((triangleIndices[i])[j]);
+          tempVector.push_back((triangleIndices[i])[j]); //first 3 terms are middle of edge vertices 
+          triInd[j] = adjT[i][j];
+        }
+        
+        for(int k = 0; k < 3; ++k){
+          for(int j = 0 ; j < 3; ++j){
+            int val = (triangleIndices[(adjT[i])[k]])[j];
+            tempList.push_back((triangleIndices[(adjT[i])[k]])[j]);
+            if((val != tempVector[0]) && (val != tempVector[1]) && (val!= tempVector[2])){
+                tempVector.push_back((triangleIndices[(adjT[i])[k]])[j]);
+            }
+          }
+        }
+        indicesT.push_back(getTriangleOrder(tempVector, triInd, triangleIndices));
+        }
+    }
 
-    //     for (std::list<int>::iterator it=tempList.begin(); it!=tempList.end(); ++it){
-    //       tempVector.push_back(markers[*it].size());
-    //     }
-    //     adjNo++;
-    //     indicesT.push_back(tempVector);
-    //   }
-    // }
-  
     
     // std::vector< std::vector <int> > votes (counter + 1);
     // for(int i = 0 ; i < indicesT.size(); ++i){
@@ -382,7 +406,7 @@ int main(){
     }
 
     for(int i =0 ; i< counter + 1; ++i){
-        std::string str = std::to_string(markers[i].size());
+        std::string str = std::to_string(i);
         putText(drawing, str, markerCentre[i], cv::FONT_HERSHEY_SIMPLEX,1,cv::Scalar(0,0,0),2, cv::LINE_AA);
     }
 
