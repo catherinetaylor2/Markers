@@ -19,6 +19,7 @@ public:
 	}
 	int id;
 	cv::Point2f position;
+    std::vector<int> votes;
 };
 
 static void draw_delaunay( cv::Mat& img, cv::Subdiv2D& subdiv, cv::Scalar delaunay_color, std::vector<cv::Vec6f> *T ){
@@ -123,10 +124,13 @@ std::vector<int> getTriangleOrder(std::vector<int> input, int triangles[3], std:
 int main(){
 
     //INITIALISE THE GRID-----------------------------------------
+    //NOTE: ID indexing begins at 1
 
+    int numberOfClusters = 9;
+    
     std::vector<int> test(6), outputTest(6), IDs (6);
-    IDs = {1,2,3,4,5,8};
-    test = {4,3,4,2,4,3};
+    IDs = {2,5,9,8,7,4};
+    test = {3,4,1,3,1,2};
 
     std::unordered_map <int, std::vector<int> > hashTable;
     int key;
@@ -137,8 +141,8 @@ int main(){
 
     IDs.clear();
     test.clear();
-    IDs = {2,4,5,7,8,9};
-    test = {3,2,4,1,3,1};
+    IDs = {1,2,3,5,8,4};
+    test = {4,3,4,4,3,2};
     for(int i = 0; i < 3; ++i){
         key = calculateKey(getPermutation(test, i));
         hashTable[key] = IDs;
@@ -273,6 +277,9 @@ int main(){
 
         dotCluster.position = markerCentre[i];
         dotCluster.id = markersSize;
+        for(int j = 0; j < numberOfClusters; ++j){
+            (dotCluster.votes).push_back(0);
+        }
         markerIDs.push_back(dotCluster);
     }        
 
@@ -329,17 +336,16 @@ int main(){
       }
          
     }
-    std::vector <std::vector<int> > indicesT;
-    std::list<int> tempList;
-    std::vector<int> tempVector, tempVector2;
+    std::vector <std::vector<int> > indicesT, dotsT;
+    std::vector<int> tempVector, tempVector2, tempVector3;
     int adjNo = 0;
     int triInd [3];
     for(int i = 0; i< T.size(); ++i){
         if(adjT[i].size() == 3){
-            tempList.clear();
             tempVector.clear();
+            tempVector2.clear();
+            tempVector3.clear();
             for(int j = 0 ; j < 3; ++j){
-                tempList.push_back((triangleIndices[i])[j]);
                 tempVector.push_back((triangleIndices[i])[j]); //first 3 terms are middle of edge vertices 
                 triInd[j] = adjT[i][j];
             }
@@ -347,25 +353,40 @@ int main(){
             for(int k = 0; k < 3; ++k){
                 for(int j = 0 ; j < 3; ++j){
                     int val = (triangleIndices[(adjT[i])[k]])[j];
-                    tempList.push_back((triangleIndices[(adjT[i])[k]])[j]);
                     if((val != tempVector[0]) && (val != tempVector[1]) && (val!= tempVector[2])){
                         tempVector.push_back((triangleIndices[(adjT[i])[k]])[j]);
                     }
                 }
             }
-            indicesT.push_back(getTriangleOrder(tempVector, triInd, triangleIndices));
+            tempVector2 = getTriangleOrder(tempVector, triInd, triangleIndices);
+            for(int j = 0; j < tempVector2.size(); ++j){
+                tempVector3.push_back(markers[tempVector2[j]].size());
+            }
+            indicesT.push_back(tempVector2);
+            dotsT.push_back(tempVector3);
         }
     }
 
-    
-    // std::vector< std::vector <int> > votes (counter + 1);
-    // for(int i = 0 ; i < indicesT.size(); ++i){
-    //   outputTest = hashTable[calculateKey(indicesT[i])];
-    //   for(int j = 0; j<indicesT[i].size(); ++j){
-    //     (votes[indicesT[i][j]]) = outputTest;
-    //   }
+
+    for(int i = 0 ; i < indicesT.size(); ++i){
+        outputTest = hashTable[calculateKey(dotsT[i])];
+        for(int j = 0; j<indicesT[i].size(); ++j){
+            for (int k = 0; k < outputTest.size(); ++k){
+                ++((markerIDs[indicesT[i][j]]).votes)[outputTest[k] - 1];
+            }
+        }
+    }
+
+
+    // for(int i = 0; i < markerIDs.size(); i++){
+    //     std::cout<<"marker "<<i<<" votes : ";
+    //     for(int j = 0; j < numberOfClusters; ++j){
+    //         std::cout<<markerIDs[i].votes[j]<<" ";
+    //     }
+    //     std::cout<<"\n";
     // }
 
+    
     // for(int i = 0; i < counter + 1; ++i){,
     //   if(votes[i].size() > 0){
     //     for(int j = 0; j<votes[i].size(); ++j){
