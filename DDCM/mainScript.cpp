@@ -14,12 +14,13 @@ class DotCluster
 public: 
 	DotCluster(){};
 	DotCluster(int _id, cv::Point2f _position, int numberOfClusters){
-		id = _id;
+		dotNumber = _id;
 		position = _position;
 	}
-	int id;
+	int dotNumber;
 	cv::Point2f position;
     std::vector<int> votes;
+    int id;
 };
 
 static void draw_delaunay( cv::Mat& img, cv::Subdiv2D& subdiv, cv::Scalar delaunay_color, std::vector<cv::Vec6f> *T ){
@@ -64,28 +65,22 @@ int findIndex(std::vector<cv::Point2f> centres, cv::Point2f P){
   return index;
 }
 
-int findMode(std::vector<int> input){
-  std::vector<int> histogram(input.size(),0);
-  for( int i=0; i<input.size(); ++i )
-    ++histogram[ input[i] ];
-    return std::max_element( histogram.begin(), histogram.end() ) - histogram.begin();
-}
-
 int myMode(std::vector<int> input){
-    std::vector<int> votes = input;
-    // for(int i = 0; i <input.size(); ++i){
-    //     for(int j = 0; j < input[i]; ++j){
-    //         votes.push_back(i);
-    //     }
-    // }
+    std::vector<int> votes ;
+    for(int i = 0; i <input.size(); ++i){
+        for(int j = 0; j < input[i]; ++j){
+            votes.push_back(i);
+        }
+    }
+    if(votes.size() == 0){
+        return -1;
+    }
     std::sort(votes.begin(), votes.end());
-    
     int number = votes[0];
     int modeVal = number;
     int count = 1;
     int countMode = 1;
     int prevMax = 0;
-
     for (int i=1; i<votes.size(); i++){
         if(votes[i] == number) { // count occurrences of the current number
             ++count;
@@ -113,7 +108,7 @@ int myMode(std::vector<int> input){
         return modeVal;
     }
     else{
-        return -1;
+        return -1; //mode is not unique
     }
 }
 
@@ -311,6 +306,9 @@ int main(){
     int  markersSize;
     std::vector<DotCluster> markerIDs;
     DotCluster dotCluster;
+    for(int j = 0; j < numberOfClusters; ++j){
+        (dotCluster.votes).push_back(0);
+    }
     for(int i = 0; i < counter + 1; ++i){
         currentCentre = cv::Point2f(0.0f, 0.0f);
         markersSize = markers[i].size();
@@ -322,10 +320,7 @@ int main(){
         markerCentre[i] = currentCentre;
 
         dotCluster.position = markerCentre[i];
-        dotCluster.id = markersSize;
-        for(int j = 0; j < numberOfClusters; ++j){
-            (dotCluster.votes).push_back(0);
-        }
+        dotCluster.dotNumber = markersSize;
         markerIDs.push_back(dotCluster);
     }        
 
@@ -349,38 +344,36 @@ int main(){
 
 
     for(int i = 0; i< T.size(); ++i){
-      
-      cv::Vec6f t = T[i];
-      indices[0] = cv::Point2f(t[0], t[1]);
-      indices[1] = cv::Point2f(t[2], t[3]);
-      indices[2] = cv::Point2f(t[4], t[5]);
 
-      for (int ii = 0; ii < 3; ++ii){
-        (triangleIndices[i]).push_back((findIndex(markerCentre, indices[ii]))); //for triangle i, vertices index in markerCentre can be found
-      }
+        cv::Vec6f t = T[i];
+        indices[0] = cv::Point2f(t[0], t[1]);
+        indices[1] = cv::Point2f(t[2], t[3]);
+        indices[2] = cv::Point2f(t[4], t[5]);
 
-      for(int j =0 ; j < T.size(); ++j){
-        if(i!=j){
-          cv::Vec6f t2 = T[j];
-          indices2[0] = cv::Point2f(t2[0], t2[1]);
-          indices2[1] = cv::Point2f(t2[2], t2[3]);
-          indices2[2] = cv::Point2f(t2[4], t2[5]);
-          int matchingIndices = 0;
-
-          for(int k = 0; k < 3; ++k){
-            for( int l = 0; l < 3; ++l){
-              if(indices[k] == indices2[l]){
-                matchingIndices++;
-              }
-            }
-          }
-          if(matchingIndices == 2){
-            adjT[i].push_back(j);
-          }
-
+        for (int ii = 0; ii < 3; ++ii){
+            (triangleIndices[i]).push_back((findIndex(markerCentre, indices[ii]))); //for triangle i, vertices index in markerCentre can be found
         }
-      }
-         
+
+        for(int j =0 ; j < T.size(); ++j){
+            if(i!=j){
+                cv::Vec6f t2 = T[j];
+                indices2[0] = cv::Point2f(t2[0], t2[1]);
+                indices2[1] = cv::Point2f(t2[2], t2[3]);
+                indices2[2] = cv::Point2f(t2[4], t2[5]);
+                int matchingIndices = 0;
+
+                for(int k = 0; k < 3; ++k){
+                    for( int l = 0; l < 3; ++l){
+                        if(indices[k] == indices2[l]){
+                            matchingIndices++;
+                        }
+                    }
+                }
+                if(matchingIndices == 2){
+                    adjT[i].push_back(j);
+                }
+            }
+        }
     }
     std::vector <std::vector<int> > indicesT, dotsT;
     std::vector<int> tempVector, tempVector2, tempVector3;
@@ -423,62 +416,19 @@ int main(){
         }
     }
 
+    for(int i = 0; i< markerIDs.size(); ++i){
+        markerIDs[i].id = myMode(markerIDs[i].votes); //uses the mode to vote
+    }
 
-    // for(int i = 0; i < markerIDs.size(); i++){
-    //     std::cout<<"marker "<<i<<" votes : ";
-    //     for(int j = 0; j < numberOfClusters; ++j){
-    //         std::cout<<markerIDs[i].votes[j]<<" ";
-    //     }
-    //     std::cout<<"\n";
-    // }
-
-
-    // for(int i = 0; i < counter + 1; ++i){,
-    //   if(votes[i].size() > 0){
-    //     for(int j = 0; j<votes[i].size(); ++j){
-    //       std::cout<<votes[i][j]<<"\n";
-    //     }
-    //     int vote = findMode(votes[i]);
-    //    // std::cout<<"vote "<<vote<<"\n";
-    //   }
-    // }
-
-
-
-  
-
-    cv::Scalar colour ;
-
-
+    cv::Scalar colour  = cv::Scalar(0,0,255);
     for( int i = 0; i< finalContours.size(); i++ ){
-        if(cluster[i] % 5 == 0){
-            colour = cv::Scalar(255,0,0);
-        }
-        if(cluster[i] % 5 == 1){
-            colour = cv::Scalar(0,255,0);
-        }
-        if(cluster[i] % 5 == 2){
-            colour = cv::Scalar(0,0,255);
-        }
-        if(cluster[i] % 5 == 3){
-            colour = cv::Scalar(255,255,0);
-        }
-        if(cluster[i] % 5 == 4){
-            colour = cv::Scalar(0,0,0);
-        }
-        cv::Scalar color = cv::Scalar( 255, 0, 0);
         drawContours( drawing, finalContours, i, colour, 2, 8, hierarchy, 0, cv::Point());
-        
- 
     }
 
-    for(int i =0 ; i< counter + 1; ++i){
+    for(int i = 0; i < markerIDs.size(); ++i){
         std::string str = std::to_string(i);
-        putText(drawing, str, markerCentre[i], cv::FONT_HERSHEY_SIMPLEX,1,cv::Scalar(0,0,0),2, cv::LINE_AA);
-    }
-
-    for(int i = 0; i< counter +1; ++i){
-        circle(drawing, markerCentre[i], 30, cv::Scalar(0,0,0), 1, 8, 0 );
+        putText(drawing, str, markerIDs[i].position, cv::FONT_HERSHEY_SIMPLEX,1,cv::Scalar(0,0,0),2, cv::LINE_AA);
+        circle(drawing, markerIDs[i].position, 30, cv::Scalar(0,0,0), 1, 8, 0 );
     }
 
 
@@ -490,10 +440,6 @@ int main(){
         exit_key_press = cvWaitKey(1);
     }while (exit_key_press != '\x1b');
 
-    std::vector<int> O = {3,3,3,1,1, 1,1,3,4,5,5,5};
-    myMode(O);
-
-   
 
     return 0;
 }
