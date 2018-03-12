@@ -71,6 +71,52 @@ int findMode(std::vector<int> input){
     return std::max_element( histogram.begin(), histogram.end() ) - histogram.begin();
 }
 
+int myMode(std::vector<int> input){
+    std::vector<int> votes = input;
+    // for(int i = 0; i <input.size(); ++i){
+    //     for(int j = 0; j < input[i]; ++j){
+    //         votes.push_back(i);
+    //     }
+    // }
+    std::sort(votes.begin(), votes.end());
+    
+    int number = votes[0];
+    int modeVal = number;
+    int count = 1;
+    int countMode = 1;
+    int prevMax = 0;
+
+    for (int i=1; i<votes.size(); i++){
+        if(votes[i] == number) { // count occurrences of the current number
+            ++count;
+        }
+        else{ // now this is a different number
+            if (count > countMode){
+                countMode = count; // mode is the biggest ocurrences
+                modeVal = number;
+            }
+            else if(count == countMode){
+                prevMax = count;
+            }
+           count = 1; // reset count for the new number
+           number = votes[i];
+        }
+    }
+
+    if (count > countMode){// mode is the biggest ocurrences
+        modeVal = number;
+    }
+    else if(count == countMode){
+        prevMax = count;
+    }
+    if(prevMax == 0){
+        return modeVal;
+    }
+    else{
+        return -1;
+    }
+}
+
 std::vector<int> getPermutation(std::vector<int> input, int permutation){
     std::vector<int> output;
     if(permutation % 3 == 0){
@@ -386,7 +432,7 @@ int main(){
     //     std::cout<<"\n";
     // }
 
-    
+
     // for(int i = 0; i < counter + 1; ++i){,
     //   if(votes[i].size() > 0){
     //     for(int j = 0; j<votes[i].size(); ++j){
@@ -444,6 +490,10 @@ int main(){
         exit_key_press = cvWaitKey(1);
     }while (exit_key_press != '\x1b');
 
+    std::vector<int> O = {3,3,3,1,1, 1,1,3,4,5,5,5};
+    myMode(O);
+
+   
 
     return 0;
 }
