@@ -635,7 +635,6 @@ int main(){
         
             for(int j = 0; j < tempVector2.size(); ++j){
                 tempVector3.push_back(markers[tempVector2[j]].size());
-      
             }
             indicesT.push_back(tempVector2);
             dotsT.push_back(tempVector3);
@@ -669,7 +668,7 @@ int main(){
         std::string str = std::to_string(markerIDs[i].id);
         if(markerIDs[i].id != -1){
             putText(drawing, str, markerIDs[i].position, cv::FONT_HERSHEY_SIMPLEX,1,cv::Scalar(0,0,0),2, cv::LINE_AA);
-       }
+        }
         circle(drawing, markerIDs[i].position, 30, cv::Scalar(0,0,0), 1, 8, 0 );
     }
 
