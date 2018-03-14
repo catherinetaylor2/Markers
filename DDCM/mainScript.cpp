@@ -56,14 +56,14 @@ int calculateKey(std::vector<int> numberDots){
 }
 
 int findIndex(std::vector<cv::Point2f> centres, cv::Point2f P){
-  int index = -1;
-  for(int i = 0; i < centres.size(); ++i){
-    if(centres [i] == P){
-      index = i;
-      return index;
+    int index = -1;
+    for(int i = 0; i < centres.size(); ++i){
+        if(centres [i] == P){
+            index = i;
+            return index;
+        }
     }
-  }
-  return index;
+    return index;
 }
 
 int myMode(std::vector<int> input, int* numberOfVotes){
@@ -78,43 +78,37 @@ int myMode(std::vector<int> input, int* numberOfVotes){
     }
     std::sort(votes.begin(), votes.end());
 
-
-
-    int number = votes[0];
-    int modeVal = number;
-    int count = 1;
-    int countMode = 1;
+    int number = votes[0], modeVal = number;
+    int count = 1, countMode = 1;
     int prevMax = 0;
     for (int i=1; i<votes.size(); i++){
-        if(votes[i] == number) { // count occurrences of the current number
+        if(votes[i] == number) { 
             ++count;
         }
-        else{ // now this is a different number
+        else{ 
             if (count > countMode){
-                countMode = count; // mode is the biggest ocurrences
+                countMode = count; 
                 modeVal = number;
             }
             else if(count == countMode){
                 prevMax = count;
             }
-           count = 1; // reset count for the new number
-           number = votes[i];
+            count = 1; 
+            number = votes[i];
         }
     }
-
-    if (count > countMode){// mode is the biggest ocurrences
+    if (count > countMode){
         modeVal = number;
     }
     else if(count == countMode){
         prevMax = count;
     }
     (*numberOfVotes) = countMode;
-    // std::cout<<"count "<<count<<" prev max "<<prevMax<<" MODE "<<modeVal<<"\n";
     if(prevMax < countMode){
         return modeVal;
     }
     else{
-        return -1; //mode is not unique
+        return -1; 
     }
 }
 
@@ -432,10 +426,7 @@ int main(){
         key = calculateKey(getPermutation(test, i));
         hashTable[key] = IDs;
     }
-    IDs.clear();
-    test.clear();
     //--------------------------------------------------------
-
 
 
     float maxContourArea = 200.0f;
@@ -450,7 +441,7 @@ int main(){
     std::vector<std::vector<cv::Point> > contours, contoursThresh,  finalContours;
     std::vector<cv::Vec4i> hierarchy;
 
-    imgInput = cv::imread("test7.png");
+    imgInput = cv::imread("test.png");
     cv::cvtColor(imgInput, imgInput, CV_BGR2GRAY);
     adaptiveThreshold(imgInput, imgThresh, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY,25,5); //these values can be varied
     blur( imgThresh, imgThresh, cv::Size(3,3));    
@@ -587,8 +578,6 @@ int main(){
     std::vector <std::vector <int> > adjT (T.size());
     std::vector <std::vector <int> > triangleIndices (T.size());
 
-
-
     for(int i = 0; i< T.size(); ++i){
 
         cv::Vec6f t = T[i];
@@ -668,7 +657,6 @@ int main(){
         markerIDs[i].id = myMode(markerIDs[i].votes, &numberOfVotes); //uses the mode to vote
         markerIDs[i].modeCount = numberOfVotes;
     }
-
     removeMultipleVotes(&markerIDs);
 
 
@@ -684,7 +672,6 @@ int main(){
        }
         circle(drawing, markerIDs[i].position, 30, cv::Scalar(0,0,0), 1, 8, 0 );
     }
-
 
     
     namedWindow("myWindow", cv::WINDOW_AUTOSIZE);
