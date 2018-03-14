@@ -21,6 +21,7 @@ public:
 	cv::Point2f position;
     std::vector<int> votes;
     int id;
+    int modeCount;
 };
 
 static void draw_delaunay( cv::Mat& img, cv::Subdiv2D& subdiv, cv::Scalar delaunay_color, std::vector<cv::Vec6f> *T ){
@@ -38,9 +39,9 @@ static void draw_delaunay( cv::Mat& img, cv::Subdiv2D& subdiv, cv::Scalar delaun
          
         // Draw rectangles completely inside the image.
         if ( rect.contains(pt[0]) && rect.contains(pt[1]) && rect.contains(pt[2])){
-            line(img, pt[0], pt[1], delaunay_color, 1, CV_AA, 0);
-            line(img, pt[1], pt[2], delaunay_color, 1, CV_AA, 0);
-            line(img, pt[2], pt[0], delaunay_color, 1, CV_AA, 0);
+        //    line(img, pt[0], pt[1], delaunay_color, 1, CV_AA, 0);
+          //  line(img, pt[1], pt[2], delaunay_color, 1, CV_AA, 0);
+          //  line(img, pt[2], pt[0], delaunay_color, 1, CV_AA, 0);
             (*T).push_back(triangleList[i]);
         }
     }
@@ -65,17 +66,20 @@ int findIndex(std::vector<cv::Point2f> centres, cv::Point2f P){
   return index;
 }
 
-int myMode(std::vector<int> input){
+int myMode(std::vector<int> input, int* numberOfVotes){
     std::vector<int> votes ;
     for(int i = 0; i <input.size(); ++i){
         for(int j = 0; j < input[i]; ++j){
-            votes.push_back(i);
+            votes.push_back(i+1);
         }
     }
     if(votes.size() == 0){
         return -1;
     }
     std::sort(votes.begin(), votes.end());
+
+
+
     int number = votes[0];
     int modeVal = number;
     int count = 1;
@@ -104,7 +108,9 @@ int myMode(std::vector<int> input){
     else if(count == countMode){
         prevMax = count;
     }
-    if(prevMax == 0){
+    (*numberOfVotes) = countMode;
+    // std::cout<<"count "<<count<<" prev max "<<prevMax<<" MODE "<<modeVal<<"\n";
+    if(prevMax < countMode){
         return modeVal;
     }
     else{
@@ -149,7 +155,7 @@ std::vector<int> getTriangleOrder(std::vector<int> input, int triangles[3], std:
         for(int j = 0; j < 3; ++j){
             t = triangles[j];
             T = triangleIndices[t];
-            if(((A == T[0])||(A == T[1]) ||(A==T[3]))&&((B == T[0])||(B == T[1])|| (B == T[2]))){
+            if(((A == T[0])||(A == T[1]) ||(A==T[2]))&&((B == T[0])||(B == T[1])|| (B == T[2]))){
                 for(int k = 0; k < 3; ++k){
                     if((T[k]!=A)&&(T[k]!=B)){
                         output.push_back(T[k]);
@@ -162,33 +168,272 @@ std::vector<int> getTriangleOrder(std::vector<int> input, int triangles[3], std:
     return output;
 }
 
+void removeMultipleVotes(std::vector<DotCluster> * input){
+    int SIZE = (*input).size();
+    int currentID, currentMax;
+    for(int i = 0; i < SIZE; ++i){
+        currentID = (*input)[i].id;
+        currentMax =(*input)[i].modeCount;
+        if (currentID != -1){
+            for(int j = i + 1; j <SIZE; ++j){
+                if((*input)[j].id == currentID){
+                    if((*input)[j].modeCount < currentMax){
+                        (*input)[j].id = -1;
+                    }
+                    else if ((*input)[j].modeCount == currentMax){
+                        (*input)[j].id = -1;
+                        (*input)[i].id = -1;
+                    }
+                    else{
+                        (*input)[i].id = -1;
+                    }
+                }
+            }
+        }
+    }
+}
+
 int main(){
 
     //INITIALISE THE GRID-----------------------------------------
     //NOTE: ID indexing begins at 1
 
-    int numberOfClusters = 9;
-    
+    int numberOfClusters = 45;
     std::vector<int> test(6), outputTest(6), IDs (6);
-    IDs = {2,5,9,8,7,4};
-    test = {3,4,1,3,1,2};
-
     std::unordered_map <int, std::vector<int> > hashTable;
     int key;
+
+    IDs =  {1,2,3,9,15,8}; test = {1,2,3,4,1,7};    
     for(int i = 0; i < 3; ++i){
         key = calculateKey(getPermutation(test, i));
         hashTable[key] = IDs;
     }
-
     IDs.clear();
     test.clear();
-    IDs = {1,2,3,5,8,4};
-    test = {4,3,4,4,3,2};
+
+    IDs =  {2,3,4,10,16,9}; test = {2,3,7,5,6,4};    
     for(int i = 0; i < 3; ++i){
         key = calculateKey(getPermutation(test, i));
         hashTable[key] = IDs;
     }
+    IDs.clear();
+    test.clear();
 
+    IDs =  {3,4,5,11,17,10}; test = {3,7,4,1,2,5};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {4,5, 6,12,18,11}; test = {7,4,6,3,6,1};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {5,6,7,13,19,12}; test = {4,6,2,4,2,3};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {2,9,16,15,14,18}; test = {2,4,6,1,5,7};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {8,9,10,16,21,15}; test = {7,4,5,6,3,1};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {3,10,17,16,15,9}; test = {3,5,2,6,1,4};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {9,10,11,17,22,16}; test = {4,5,1,2,4,6};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {4,11,18, 17, 16, 10}; test = {7,1,6,2,6,5};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {10,11,12,18,23,17}; test = {3,1,3,6,5,2};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {5,12,19,18,17,11}; test = {4,3,2,6,2,1};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {11,12,13,19,24,18}; test = {1,3,4,2,7,6};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {6,13,25,19,18,12}; test = {6,4,2,2,6,3};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {1,8,9,15,20,14}; test = {1,7,4,1,4,5};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {8,15,21,20,26,14}; test = {7,1,3,4,3,5};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {14,15,16,21,27,20}; test = {5,1,6,3,1,4};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {9,16,22,21,20,15}; test = {4,6,4,3,4,1};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {15,16,17,22,28,21}; test = {1,6,2,4,4,3};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {10,17,23,22,21,16}; test = {5,2,5,4,3,6};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+      
+    IDs =  {16,17,18,23,29,22}; test = {6,2,6,5,7,4};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {11,18,24,23,22,17}; test = {1,6,7,5,4,2};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+   
+    IDs =  {17,18,19,24,30,23}; test = {2,6,2,7,2,5};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {12,19,25,24,23,18}; test = {3,2,2,7,5,6};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {18,19,13,25,31,24}; test = {6,2,4,2,3,7};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {15,21,28,27,26,20}; test = {1,3,4,1,3,4};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {16,22,29,28,27,21}; test = {6,4,7,4,1,3};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {17,23,30,29,28,22}; test = {2,5,2,7,4,4};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
+
+    IDs =  {18,24,31,30,29,23}; test = {6,7,3,2,7,5};    
+    for(int i = 0; i < 3; ++i){
+        key = calculateKey(getPermutation(test, i));
+        hashTable[key] = IDs;
+    }
+    IDs.clear();
+    test.clear();
     //--------------------------------------------------------
 
 
@@ -205,7 +450,7 @@ int main(){
     std::vector<std::vector<cv::Point> > contours, contoursThresh,  finalContours;
     std::vector<cv::Vec4i> hierarchy;
 
-    imgInput = cv::imread("test5.png");
+    imgInput = cv::imread("test7.png");
     cv::cvtColor(imgInput, imgInput, CV_BGR2GRAY);
     adaptiveThreshold(imgInput, imgThresh, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY,25,5); //these values can be varied
     blur( imgThresh, imgThresh, cv::Size(3,3));    
@@ -343,6 +588,7 @@ int main(){
     std::vector <std::vector <int> > triangleIndices (T.size());
 
 
+
     for(int i = 0; i< T.size(); ++i){
 
         cv::Vec6f t = T[i];
@@ -388,7 +634,6 @@ int main(){
                 tempVector.push_back((triangleIndices[i])[j]); //first 3 terms are middle of edge vertices 
                 triInd[j] = adjT[i][j];
             }
-
             for(int k = 0; k < 3; ++k){
                 for(int j = 0 ; j < 3; ++j){
                     int val = (triangleIndices[(adjT[i])[k]])[j];
@@ -398,8 +643,10 @@ int main(){
                 }
             }
             tempVector2 = getTriangleOrder(tempVector, triInd, triangleIndices);
+        
             for(int j = 0; j < tempVector2.size(); ++j){
                 tempVector3.push_back(markers[tempVector2[j]].size());
+      
             }
             indicesT.push_back(tempVector2);
             dotsT.push_back(tempVector3);
@@ -415,19 +662,26 @@ int main(){
             }
         }
     }
-
-    for(int i = 0; i< markerIDs.size(); ++i){
-        markerIDs[i].id = myMode(markerIDs[i].votes); //uses the mode to vote
+    int SIZE = markerIDs.size();
+    int numberOfVotes;
+    for(int i = 0; i<SIZE; ++i){
+        markerIDs[i].id = myMode(markerIDs[i].votes, &numberOfVotes); //uses the mode to vote
+        markerIDs[i].modeCount = numberOfVotes;
     }
+
+    removeMultipleVotes(&markerIDs);
+
 
     cv::Scalar colour  = cv::Scalar(0,0,255);
     for( int i = 0; i< finalContours.size(); i++ ){
         drawContours( drawing, finalContours, i, colour, 2, 8, hierarchy, 0, cv::Point());
     }
 
-    for(int i = 0; i < markerIDs.size(); ++i){
-        std::string str = std::to_string(i);
-        putText(drawing, str, markerIDs[i].position, cv::FONT_HERSHEY_SIMPLEX,1,cv::Scalar(0,0,0),2, cv::LINE_AA);
+    for(int i = 0; i <SIZE; ++i){
+        std::string str = std::to_string(markerIDs[i].id);
+        if(markerIDs[i].id != -1){
+            putText(drawing, str, markerIDs[i].position, cv::FONT_HERSHEY_SIMPLEX,1,cv::Scalar(0,0,0),2, cv::LINE_AA);
+       }
         circle(drawing, markerIDs[i].position, 30, cv::Scalar(0,0,0), 1, 8, 0 );
     }
 
