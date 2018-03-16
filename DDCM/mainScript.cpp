@@ -429,7 +429,7 @@ int main(){
     //--------------------------------------------------------
 
 
-    float maxContourArea = 200.0f;
+    float maxContourArea = 1000.0f;
     float minContourArea = 10.0f;
     float eMax = 0.1f;
     int contourThreshold = 100;
@@ -441,7 +441,7 @@ int main(){
     std::vector<std::vector<cv::Point> > contours, contoursThresh,  finalContours;
     std::vector<cv::Vec4i> hierarchy;
 
-    imgInput = cv::imread("test.png");
+    imgInput = cv::imread("test3.jpg");
     cv::cvtColor(imgInput, imgInput, CV_BGR2GRAY);
     adaptiveThreshold(imgInput, imgThresh, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY,25,5); //these values can be varied
     blur( imgThresh, imgThresh, cv::Size(3,3));    
@@ -572,9 +572,6 @@ int main(){
     
     cv::Point2f indices[3], indices2[3];
 
-    std::vector< cv::Vec4f >edgeList ;
-    subdiv.getEdgeList(edgeList);
-
     std::vector <std::vector <int> > adjT (T.size());
     std::vector <std::vector <int> > triangleIndices (T.size());
 
@@ -657,7 +654,7 @@ int main(){
         markerIDs[i].modeCount = numberOfVotes;
     }
     removeMultipleVotes(&markerIDs);
-
+    SIZE = markerIDs.size();
 
     cv::Scalar colour  = cv::Scalar(0,0,255);
     for( int i = 0; i< finalContours.size(); i++ ){
