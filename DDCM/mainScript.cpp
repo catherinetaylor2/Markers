@@ -5,6 +5,9 @@
 #include <algorithm> 
 #include <bits/stdc++.h>
 #include <time.h> // for random
+#include <fstream>
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
 
 cv::RNG rng(12345);
 #define PI 3.141592654f
@@ -113,6 +116,9 @@ int myMode(std::vector<int> input, int* numberOfVotes){
 }
 
 std::vector<int> getPermutation(std::vector<int> input, int permutation){
+    if(input.size() == 0){
+        return input;
+    }
     std::vector<int> output;
     if(permutation % 3 == 0){
         return input;
@@ -187,245 +193,273 @@ void removeMultipleVotes(std::vector<DotCluster> * input){
     }
 }
 
+void fillHashtable( std::unordered_map <int, std::vector<int> > * hashTable, const char* IdFilename, const char * markersFilename){
+    std::vector<int> test, IDs ;
+    int key;
+    std::fstream myfile(IdFilename, std::ios_base::in);
+    std::fstream myfile2(markersFilename, std::ios_base::in);
+
+    int a, b;
+    int i = 0;
+    while (myfile >> a){
+        myfile2 >> b;
+        if(i%6 == 0 ){
+            if(test.size()>0){
+                for(int j = 0; j < 3; ++j){
+                    key = calculateKey(getPermutation(test, j));
+                    (*hashTable)[key] = IDs;
+                }
+                IDs.clear();
+                test.clear();
+            }
+        }
+        test.push_back(b);
+        IDs.push_back(a);
+        ++i;
+    }
+}
+
+
 int main(){
 
     //INITIALISE THE GRID-----------------------------------------
     //NOTE: ID indexing begins at 1
 
-    int numberOfClusters = 45;
-    std::vector<int> test(6), outputTest(6), IDs (6);
+    int numberOfClusters = 20;
+    std::vector<int> outputTest(6);
     std::unordered_map <int, std::vector<int> > hashTable;
-    int key;
+    fillHashtable(&hashTable, "markerIDs.txt", "markerClusters.txt");
 
-    IDs =  {1,2,3,9,15,8}; test = {1,2,3,4,1,7};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
 
-    IDs =  {2,3,4,10,16,9}; test = {2,3,7,5,6,4};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {1,2,3,9,15,8}; test = {1,2,3,4,1,7};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {3,4,5,11,17,10}; test = {3,7,4,1,2,5};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {2,3,4,10,16,9}; test = {2,3,7,5,6,4};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {4,5, 6,12,18,11}; test = {7,4,6,3,6,1};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {3,4,5,11,17,10}; test = {3,7,4,1,2,5};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {5,6,7,13,19,12}; test = {4,6,2,4,2,3};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {4,5, 6,12,18,11}; test = {7,4,6,3,6,1};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {2,9,16,15,14,18}; test = {2,4,6,1,5,7};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {5,6,7,13,19,12}; test = {4,6,2,4,2,3};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {8,9,10,16,21,15}; test = {7,4,5,6,3,1};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {2,9,16,15,14,18}; test = {2,4,6,1,5,7};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {3,10,17,16,15,9}; test = {3,5,2,6,1,4};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {8,9,10,16,21,15}; test = {7,4,5,6,3,1};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {9,10,11,17,22,16}; test = {4,5,1,2,4,6};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {3,10,17,16,15,9}; test = {3,5,2,6,1,4};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {4,11,18, 17, 16, 10}; test = {7,1,6,2,6,5};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {9,10,11,17,22,16}; test = {4,5,1,2,4,6};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {10,11,12,18,23,17}; test = {3,1,3,6,5,2};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {4,11,18, 17, 16, 10}; test = {7,1,6,2,6,5};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {5,12,19,18,17,11}; test = {4,3,2,6,2,1};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {10,11,12,18,23,17}; test = {3,1,3,6,5,2};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {11,12,13,19,24,18}; test = {1,3,4,2,7,6};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {5,12,19,18,17,11}; test = {4,3,2,6,2,1};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {6,13,25,19,18,12}; test = {6,4,2,2,6,3};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {11,12,13,19,24,18}; test = {1,3,4,2,7,6};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {1,8,9,15,20,14}; test = {1,7,4,1,4,5};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {6,13,25,19,18,12}; test = {6,4,2,2,6,3};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {8,15,21,20,26,14}; test = {7,1,3,4,3,5};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {1,8,9,15,20,14}; test = {1,7,4,1,4,5};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {14,15,16,21,27,20}; test = {5,1,6,3,1,4};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {8,15,21,20,26,14}; test = {7,1,3,4,3,5};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {9,16,22,21,20,15}; test = {4,6,4,3,4,1};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {14,15,16,21,27,20}; test = {5,1,6,3,1,4};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {15,16,17,22,28,21}; test = {1,6,2,4,4,3};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {9,16,22,21,20,15}; test = {4,6,4,3,4,1};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {10,17,23,22,21,16}; test = {5,2,5,4,3,6};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {15,16,17,22,28,21}; test = {1,6,2,4,4,3};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
+
+    // IDs =  {10,17,23,22,21,16}; test = {5,2,5,4,3,6};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
       
-    IDs =  {16,17,18,23,29,22}; test = {6,2,6,5,7,4};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {16,17,18,23,29,22}; test = {6,2,6,5,7,4};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {11,18,24,23,22,17}; test = {1,6,7,5,4,2};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {11,18,24,23,22,17}; test = {1,6,7,5,4,2};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
    
-    IDs =  {17,18,19,24,30,23}; test = {2,6,2,7,2,5};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {17,18,19,24,30,23}; test = {2,6,2,7,2,5};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {12,19,25,24,23,18}; test = {3,2,2,7,5,6};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {12,19,25,24,23,18}; test = {3,2,2,7,5,6};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {18,19,13,25,31,24}; test = {6,2,4,2,3,7};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {18,19,13,25,31,24}; test = {6,2,4,2,3,7};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {15,21,28,27,26,20}; test = {1,3,4,1,3,4};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {15,21,28,27,26,20}; test = {1,3,4,1,3,4};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {16,22,29,28,27,21}; test = {6,4,7,4,1,3};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {16,22,29,28,27,21}; test = {6,4,7,4,1,3};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {17,23,30,29,28,22}; test = {2,5,2,7,4,4};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
-    IDs.clear();
-    test.clear();
+    // IDs =  {17,23,30,29,28,22}; test = {2,5,2,7,4,4};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
+    // IDs.clear();
+    // test.clear();
 
-    IDs =  {18,24,31,30,29,23}; test = {6,7,3,2,7,5};    
-    for(int i = 0; i < 3; ++i){
-        key = calculateKey(getPermutation(test, i));
-        hashTable[key] = IDs;
-    }
+    // IDs =  {18,24,31,30,29,23}; test = {6,7,3,2,7,5};    
+    // for(int i = 0; i < 3; ++i){
+    //     key = calculateKey(getPermutation(test, i));
+    //     hashTable[key] = IDs;
+    // }
     //--------------------------------------------------------
 
 

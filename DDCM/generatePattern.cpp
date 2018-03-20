@@ -112,6 +112,31 @@ void drawMarker(cv::Mat img, int dotNumber, cv::Point centre, float radius){
     }
 }
 
+void fixVertexOrder(std::vector<int> *input, int order){
+    int a, b, c, d, e;
+    if(order == 0){
+        a = (*input)[3];
+        b = (*input)[4];
+        c = (*input)[5];
+        (*input)[3] = b;
+        (*input)[4] = c;
+        (*input)[5] = a;
+    }
+    else{
+        a = (*input)[1];
+        b = (*input)[2];
+        c = (*input)[3];
+        d = (*input)[4];
+        e = (*input)[5];
+        (*input)[1] = c;
+        (*input)[2] = e;
+        (*input)[3] = d;
+        (*input)[4] = b;
+        (*input)[5] = a;
+    }
+
+}
+
 int main(int argc, char* argv[] ){
 
     int gridWidth, gridHeight, maxNumberDots, index;
@@ -197,8 +222,9 @@ int main(int argc, char* argv[] ){
                 index = i + 1 + 2*gridWidth +j*gridWidth;
                 tempID.push_back(index +1);
                 tempCluster.push_back(outputPattern[index]);
-
+                fixVertexOrder(&tempID, 0);
                 IDS.push_back(tempID);
+                fixVertexOrder(&tempCluster, 0);
                 clusters.push_back(tempCluster);
                 std::sort(tempCluster.begin(), tempCluster.end());
                 unique = testUnique(sortedMarkers, tempCluster);
@@ -223,8 +249,9 @@ int main(int argc, char* argv[] ){
                 index = i + 1 - 2*gridWidth +j*gridWidth;
                 tempID.push_back(index +1);
                 tempCluster.push_back(outputPattern[index]);
-
+                fixVertexOrder(&tempID, 1);
                 IDS.push_back(tempID);
+                fixVertexOrder(&tempCluster, 1);
                 clusters.push_back(tempCluster);
                 std::sort(tempCluster.begin(), tempCluster.end());
                 unique = testUnique(sortedMarkers, tempCluster);
@@ -236,7 +263,7 @@ int main(int argc, char* argv[] ){
             pattern = true;
             writePattern("pattern.text", outputPattern, gridWidth, gridHeight);
             int patWidth = 1000, patHeight = 1000;
-            cv::Mat Pattern = cv::Mat(patWidth, patHeight, CV_8UC3 );
+            cv::Mat Pattern = cv::Mat(patHeight, patWidth, CV_8UC3 );
             Pattern.setTo(cv::Scalar(255,255,255));
             int wdthDivide, hghtDivide;
             if(gridWidth%2 == 1){
@@ -257,7 +284,7 @@ int main(int argc, char* argv[] ){
                 indexI = (i-1)/wdthDivide;
                 for(int j = hghtDivide; j< patHeight - hghtDivide; j+= hghtDivide){
                     indexJ = (j-1)/hghtDivide;
-                    if(indexJ%2 == 1){
+                    if(indexJ%2 == 0){
                             centre =  cv::Point(i - hghtDivide/4.0f, j);
                             drawMarker(Pattern, outputPattern[indexI + gridWidth*indexJ], centre, 2);
                     }
