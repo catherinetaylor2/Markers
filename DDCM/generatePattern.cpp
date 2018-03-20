@@ -3,6 +3,8 @@
 #include <vector>
 #include <algorithm>
 #include <fstream>
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
 
 int randomNum(int max){
     return std::rand()%max+1;
@@ -45,12 +47,77 @@ void writeToFile(const char * filename, std::vector<std::vector<int> > data){
    myfile.close();
 }
 
+void writePattern(const char * filename, int * pattern, int wdth, int hght){
+    std::ofstream myfile;
+    myfile.open(filename);
+    myfile<<"W "<<wdth<<" H "<<hght<<"\n";
+    for(int j = 0; j < hght; ++j){
+        for(int i = 0; i < wdth; ++i){
+            if(j%2 == 0){
+                myfile<<pattern[i + wdth*j] <<" ";
+            }
+            else{
+                myfile<<pattern[i + wdth*j] <<" ";
+            }
+        }
+        myfile<<"\n";
+    }
+    myfile.close();
+}
+void drawMarker(cv::Mat img, int dotNumber, cv::Point centre, float radius){
+    if(dotNumber == 1){
+        cv::circle(img, centre, 2*radius, cv::Scalar(0,0,0), -1, 8, 0);
+    }
+    else if(dotNumber == 2){
+        cv::circle(img, cv::Point(centre.x - 3*radius, centre.y), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+        cv::circle(img, cv::Point(centre.x + 3*radius, centre.y), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+    }
+    else if(dotNumber == 3){
+        cv::circle(img, cv::Point(centre.x - 6*radius, centre.y), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+        cv::circle(img, centre, 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+        cv::circle(img, cv::Point(centre.x + 6*radius, centre.y), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+    }
+    else if(dotNumber == 4){
+        cv::circle(img, centre, 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+        cv::circle(img, cv::Point(centre.x - 2*radius, centre.y - 6*radius), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+        cv::circle(img, cv::Point(centre.x + 6*radius, centre.y), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+        cv::circle(img, cv::Point(centre.x - 2*radius, centre.y + 6*radius), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+    }
+    else if(dotNumber == 5){
+        cv::circle(img, cv::Point(centre.x - 6*radius, centre.y), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+        cv::circle(img, centre, 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+        cv::circle(img, cv::Point(centre.x + 6*radius, centre.y), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+        cv::circle(img, cv::Point(centre.x, centre.y + 6*radius), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+        cv::circle(img, cv::Point(centre.x, centre.y - 6*radius), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+    }
+    else if(dotNumber == 6){
+        cv::circle(img, centre, 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+        cv::circle(img, cv::Point(centre.x - 2*radius, centre.y - 6*radius), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+        cv::circle(img, cv::Point(centre.x + 5*radius, centre.y - 5*radius), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+        cv::circle(img, cv::Point(centre.x + 6*radius, centre.y + 2*radius ), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+        cv::circle(img, cv::Point(centre.x - radius, centre.y + 6*radius), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+         cv::circle(img, cv::Point(centre.x - 6*radius, centre.y), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+    }
+    else if(dotNumber == 7){
+        cv::circle(img, cv::Point(centre.x - 6*radius, centre.y), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+        cv::circle(img, centre, 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+        cv::circle(img, cv::Point(centre.x + 6*radius, centre.y), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+        cv::circle(img, cv::Point(centre.x + 3*radius, centre.y + 6*radius), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+        cv::circle(img, cv::Point(centre.x + 3*radius, centre.y - 6*radius), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+        cv::circle(img, cv::Point(centre.x - 3*radius, centre.y + 6*radius), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+        cv::circle(img, cv::Point(centre.x - 3*radius, centre.y - 6*radius), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
+    }
+    else{
+        std::cerr<<"Error: no such pattern. Choose input between 1 and 7 \n";
+    }
+}
+
 int main(int argc, char* argv[] ){
 
-    int gridWidth, gridHeight, maxNumberDots;
+    int gridWidth, gridHeight, maxNumberDots, index;
     bool pattern = false;
-    std::vector<std::vector <int> > IDS;
-    std::vector<std::vector <int> > clusters;
+    std::vector<std::vector <int> > IDS, clusters, sortedMarkers;
+    std::vector<int> tempCluster, tempID;
 
     if(argc>1){
 		gridWidth = atoi(argv[1]);
@@ -105,17 +172,14 @@ int main(int argc, char* argv[] ){
                 
             }
         }
+
         //NOW TEST FOR UNIQUE TRIANGLES  ----------------------------------------
 
-        
         IDS.clear();
-        std::vector<int> tempID;
         clusters.clear();
-        std::vector<int> tempCluster;
-        std::vector<std::vector <int> > sortedMarkers;
+        sortedMarkers.clear();
         bool unique = true;
 
-        int index;
         for(int j = 0; j < gridHeight - 2; ++j){
             for(int i = 0; i < gridWidth - 2; ++i){
                 tempID.clear();
@@ -139,11 +203,9 @@ int main(int argc, char* argv[] ){
                 std::sort(tempCluster.begin(), tempCluster.end());
                 unique = testUnique(sortedMarkers, tempCluster);
                 sortedMarkers.push_back(tempCluster);
+            }
+        }
 
-                
-                
-        }
-        }
         for(int j = gridHeight - 1; j > 1; --j){
             for(int i = 0; i < gridWidth - 2; ++i){
                 tempID.clear();
@@ -167,51 +229,53 @@ int main(int argc, char* argv[] ){
                 std::sort(tempCluster.begin(), tempCluster.end());
                 unique = testUnique(sortedMarkers, tempCluster);
                 sortedMarkers.push_back(tempCluster);
-
             }
         }
 
         if(unique){
             pattern = true;
-        }
-    
-
-
-
-
-    //  std::cout<<"sorted ";
-    //             for(int k = 0 ; k< tempID.size(); ++k){
-    //                 std::cout<<tempID[k]<<" ";
-    //             }
-    //             std::cout<<"\n";
-
-        std::cout<<unique<<" pattern ";
-        for(int j = 0; j < gridHeight; ++j){
-            for(int i = 0; i < gridWidth; ++i){
-                if(j%2 == 0){
-                    std::cout<<outputPattern[i + gridWidth*j] <<" ";
-                }
-                else{
-                    std::cout<<" "<<outputPattern[i + gridWidth*j] ;
+            writePattern("pattern.text", outputPattern, gridWidth, gridHeight);
+            int patWidth = 1000, patHeight = 1000;
+            cv::Mat Pattern = cv::Mat(patWidth, patHeight, CV_8UC3 );
+            Pattern.setTo(cv::Scalar(255,255,255));
+            int wdthDivide, hghtDivide;
+            if(gridWidth%2 == 1){
+                wdthDivide = patWidth/((float)gridWidth + 1.0f);
+            }
+            else{
+                wdthDivide = patWidth/((float)gridWidth + 1.5f );
+            }
+            if(gridHeight%2 == 1){
+                hghtDivide = patHeight/((float) gridHeight + 1.0f);
+            }
+            else{
+            hghtDivide = patHeight/((float) gridHeight + 1.5f); 
+            }
+            cv::Point centre;
+            int indexI, indexJ;
+            for(int i = wdthDivide; i < patWidth - wdthDivide; i+= wdthDivide){
+                indexI = (i-1)/wdthDivide;
+                for(int j = hghtDivide; j< patHeight - hghtDivide; j+= hghtDivide){
+                    indexJ = (j-1)/hghtDivide;
+                    if(indexJ%2 == 1){
+                            centre =  cv::Point(i - hghtDivide/4.0f, j);
+                            drawMarker(Pattern, outputPattern[indexI + gridWidth*indexJ], centre, 2);
+                    }
+                    else{
+                            centre = cv::Point(i+hghtDivide/4.0f, j);
+                            drawMarker(Pattern, outputPattern[indexI + gridWidth*indexJ], centre, 2);
+                    }
                 }
             }
-            std::cout<<"\n";
+            cv::imwrite("pattern.jpg", Pattern);
         }
-
-        
-
         delete [] outputPattern;
     }
+
     writeToFile("markerIDs.txt", IDS);
-    // std::ofstream IDs;
-    // IDs.open("IDs.txt");
-    // for(int i = 0; i < IDS.size(); ++i){
-    //     for(int j = 0; j<IDS[i].size(); ++j){
-    //        IDs<<IDS[i][j]<<" ";
-    //     }
-    //     IDs<<"\n";
-    // }
-    // IDs.close();
+    writeToFile("markerClusters.txt", clusters);
+
+    
 
 
 

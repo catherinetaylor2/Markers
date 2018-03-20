@@ -441,7 +441,7 @@ int main(){
     std::vector<std::vector<cv::Point> > contours, contoursThresh,  finalContours;
     std::vector<cv::Vec4i> hierarchy;
 
-    imgInput = cv::imread("test3.jpg");
+    imgInput = cv::imread("pattern.jpg");
     cv::cvtColor(imgInput, imgInput, CV_BGR2GRAY);
     adaptiveThreshold(imgInput, imgThresh, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY,25,5); //these values can be varied
     blur( imgThresh, imgThresh, cv::Size(3,3));    
