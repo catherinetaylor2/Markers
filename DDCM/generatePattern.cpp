@@ -108,7 +108,8 @@ void drawMarker(cv::Mat img, int dotNumber, cv::Point centre, float radius){
         cv::circle(img, cv::Point(centre.x - 3*radius, centre.y - 6*radius), 2*radius, cv::Scalar(0,0,0), -1, CV_AA, 0);
     }
     else{
-        std::cerr<<"Error: no such pattern. Choose input between 1 and 7 \n";
+        std::cerr<<"Error: no such pattern. Choose input between 1 and 7. Current input "<<dotNumber<<  "\n";
+        cv::circle(img, centre, 2*radius, cv::Scalar(0,0,255), -1, CV_AA, 0);
     }
 }
 
@@ -262,35 +263,37 @@ int main(int argc, char* argv[] ){
         if(unique){
             pattern = true;
             writePattern("pattern.text", outputPattern, gridWidth, gridHeight);
-            int patWidth = 1000, patHeight = 1000;
+            int patWidth = 800, patHeight = 1000;
             cv::Mat Pattern = cv::Mat(patHeight, patWidth, CV_8UC3 );
             Pattern.setTo(cv::Scalar(255,255,255));
             int wdthDivide, hghtDivide;
+
             if(gridWidth%2 == 1){
                 wdthDivide = patWidth/((float)gridWidth + 1.0f);
             }
             else{
-                wdthDivide = patWidth/((float)gridWidth + 1.5f );
+                wdthDivide = patWidth/((float)gridWidth + 2.0f );
             }
             if(gridHeight%2 == 1){
                 hghtDivide = patHeight/((float) gridHeight + 1.0f);
             }
             else{
-            hghtDivide = patHeight/((float) gridHeight + 1.5f); 
+                hghtDivide = patHeight/((float) gridHeight + 2.0f); 
             }
+
             cv::Point centre;
             int indexI, indexJ;
-            for(int i = wdthDivide; i < patWidth - wdthDivide; i+= wdthDivide){
+            for(int i = wdthDivide; i < wdthDivide*(gridWidth+1); i+= wdthDivide){
                 indexI = (i-1)/wdthDivide;
-                for(int j = hghtDivide; j< patHeight - hghtDivide; j+= hghtDivide){
+                for(int j = hghtDivide; j< hghtDivide*(gridHeight+1); j+= hghtDivide){
                     indexJ = (j-1)/hghtDivide;
                     if(indexJ%2 == 0){
-                            centre =  cv::Point(i - hghtDivide/4.0f, j);
-                            drawMarker(Pattern, outputPattern[indexI + gridWidth*indexJ], centre, 2);
+                        centre =  cv::Point(i - wdthDivide/4.0f, j);
+                        drawMarker(Pattern, outputPattern[indexI + gridWidth*indexJ], centre, 2);
                     }
                     else{
-                            centre = cv::Point(i+hghtDivide/4.0f, j);
-                            drawMarker(Pattern, outputPattern[indexI + gridWidth*indexJ], centre, 2);
+                        centre = cv::Point(i+wdthDivide/4.0f, j);
+                        drawMarker(Pattern, outputPattern[indexI + gridWidth*indexJ], centre, 2);
                     }
                 }
             }
