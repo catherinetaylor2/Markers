@@ -50,7 +50,7 @@ void writeToFile(const char * filename, std::vector<std::vector<int> > data){
 void writePattern(const char * filename, int * pattern, int wdth, int hght){
     std::ofstream myfile;
     myfile.open(filename);
-    myfile<<"W "<<wdth<<" H "<<hght<<"\n";
+    myfile<<wdth<<" "<<hght<<"\n";
     for(int j = 0; j < hght; ++j){
         for(int i = 0; i < wdth; ++i){
             if(j%2 == 0){
