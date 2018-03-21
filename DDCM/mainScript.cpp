@@ -42,9 +42,9 @@ static void draw_delaunay( cv::Mat& img, cv::Subdiv2D& subdiv, cv::Scalar delaun
 
         // Draw rectangles completely inside the image.
         if ( rect.contains(pt[0]) && rect.contains(pt[1]) && rect.contains(pt[2])){
-        //    line(img, pt[0], pt[1], delaunay_color, 1, CV_AA, 0);
-          //  line(img, pt[1], pt[2], delaunay_color, 1, CV_AA, 0);
-          //  line(img, pt[2], pt[0], delaunay_color, 1, CV_AA, 0);
+           line(img, pt[0], pt[1], delaunay_color, 1, CV_AA, 0);
+           line(img, pt[1], pt[2], delaunay_color, 1, CV_AA, 0);
+           line(img, pt[2], pt[0], delaunay_color, 1, CV_AA, 0);
             (*T).push_back(triangleList[i]);
         }
     }
@@ -693,7 +693,7 @@ int main(){
             }
         }
     }
-    
+
     int SIZE = markerIDs.size();
     int numberOfVotes;
     for(int i = 0; i<SIZE; ++i){

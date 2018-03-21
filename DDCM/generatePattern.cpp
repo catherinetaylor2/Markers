@@ -259,6 +259,61 @@ int main(int argc, char* argv[] ){
                 sortedMarkers.push_back(tempCluster);
             }
         }
+        for(int i = 0; i < gridHeight - 3; ++i){
+            tempID.clear();
+            tempCluster.clear();
+            if(i%2 ==0){
+                index = i*gridWidth;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
+                for(int j = 0; j<2; ++j){
+                    index = (i+1)*gridWidth +j;
+                    tempID.push_back(index + 1);
+                    tempCluster.push_back(outputPattern[index]);
+                }
+                for(int j = 0; j<2; ++j){
+                    index = (i+2)*gridWidth +j;
+                    tempID.push_back(index + 1);
+                    tempCluster.push_back(outputPattern[index]);
+                }
+                index = (i+3)*gridWidth;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
+                fixVertexOrder(&tempID, 0);
+                IDS.push_back(tempID);
+                fixVertexOrder(&tempCluster, 0);
+                clusters.push_back(tempCluster);
+                std::sort(tempCluster.begin(), tempCluster.end());
+                unique = testUnique(sortedMarkers, tempCluster);
+                sortedMarkers.push_back(tempCluster);
+            }
+            else{
+                int iIndex = gridWidth - 1;
+                for(int j = 0; j<2; ++j){
+                    index = iIndex -1 + j + (i+1)*gridWidth;
+                    tempID.push_back(index + 1);
+                    tempCluster.push_back(outputPattern[index]);
+                }
+                index = iIndex + i*gridWidth;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
+                for(int j = 0; j<2; ++j){
+                    index = iIndex -1 + j + (i+2)*gridWidth;
+                    tempID.push_back(index + 1);
+                    tempCluster.push_back(outputPattern[index]);
+                }
+                index = iIndex + (i+3)*gridWidth;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
+                fixVertexOrder(&tempID, 0);
+                IDS.push_back(tempID);
+                fixVertexOrder(&tempCluster, 0);
+                clusters.push_back(tempCluster);
+                std::sort(tempCluster.begin(), tempCluster.end());
+                unique = testUnique(sortedMarkers, tempCluster);
+                sortedMarkers.push_back(tempCluster);
+            }
+        }
 
         if(unique){
             pattern = true;
