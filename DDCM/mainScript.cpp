@@ -25,6 +25,22 @@ public:
     std::vector<int> votes;
     int id;
     int modeCount;
+   
+};
+class DC
+{
+public:
+    DC(){
+        status = "lost";
+        position = cv::Point2f(-1.0f, -1.0f);
+        velocity = cv::Point2f(-1.0f, -1.0f);
+        deviation = cv::Point2f(0.0f, 0.0f);
+    }
+    int id;
+    std::string status;
+    cv::Point2f position;
+    cv::Point2f velocity;
+    cv::Point2f deviation;
 };
 
 static void draw_delaunay( cv::Mat& img, cv::Subdiv2D& subdiv, cv::Scalar delaunay_color, std::vector<cv::Vec6f> *T ){
@@ -241,7 +257,11 @@ int main(){
     std::unordered_map <int, std::vector<int> > hashTable;
     int numberOfClusters =  fillHashtable(&hashTable, "markerIDs.txt", "markerClusters.txt", "pattern.text");
 
-    std::cout<<"line 233 "<<numberOfClusters<< "\n";
+    std::vector<DC> clusterData(numberOfClusters);
+    for(int i = 0; i<numberOfClusters ; ++i){
+        clusterData[i].id = i + 1;
+    }
+   // std::cout<<"lost "<<clusterData[0].status<<"\n";
 
     // IDs =  {1,2,3,9,15,8}; test = {1,2,3,4,1,7};
     // for(int i = 0; i < 3; ++i){
@@ -534,10 +554,11 @@ int main(){
         }
     }
 
-    std::vector< cv::Point2f> geometricDeviation( NumberOfThreshContours);
-    std::vector<float> eccentricty(NumberOfThreshContours);
+    std::vector< cv::Point2f> geometricDeviation;//( NumberOfThreshContours);
+    std::vector<float> eccentricty;//(NumberOfThreshContours);
     int gridIndex;
     float Eccentricity;
+    cv::Point2f GeometricDeviation;
     std::vector<cv::Point2f> final_mc;
     for(int i = 0; i < indicesInGrid.size(); ++i){
         if(indicesInGrid[i].size() > 0){
@@ -545,6 +566,9 @@ int main(){
                 gridIndex = indicesInGrid[i][j];
                 Eccentricity = ((mu[gridIndex].mu20 - mu[gridIndex].mu02)*(mu[gridIndex].mu20 - mu[gridIndex].mu02) + 4*mu[gridIndex].mu11*mu[gridIndex].mu11)/((mu[gridIndex].mu20 + mu[gridIndex].mu02)*(mu[gridIndex].mu20 + mu[gridIndex].mu02));
                 if(Eccentricity < eMax){
+                    GeometricDeviation = cv::Point2f( sqrt(mu[i].mu20 / mu[i].m00), sqrt(mu[i].mu02 / mu[i].m00));
+                    std::cout<<"X "<<GeometricDeviation.x<<" Y "<<GeometricDeviation.y<<"\n";
+                    geometricDeviation.push_back(GeometricDeviation);
                     finalContours.push_back(contoursThresh[gridIndex]);
                     eccentricty.push_back(Eccentricity);
                     radius.push_back(sqrt(contourArea(contoursThresh[gridIndex])/PI));
@@ -701,7 +725,25 @@ int main(){
         markerIDs[i].modeCount = numberOfVotes;
     }
     removeMultipleVotes(&markerIDs);
+
+
+    int numberOfDetectedMarkers = 0;
     SIZE = markerIDs.size();
+    for(int i = 0; i < SIZE; ++i ){
+        if(markerIDs[i].id != -1){
+            ++numberOfDetectedMarkers;
+            if(clusterData[ markerIDs[i].id -1].status == "lost"){
+                clusterData[ markerIDs[i].id-1].status = "detected";
+                clusterData[ markerIDs[i].id-1].velocity = cv::Point2f(0.0f, 0.0f);
+            }
+        }
+        clusterData[ markerIDs[i].id-1].position = markerIDs[i].position;
+    }
+
+
+    // for(int i = 0; i < clusterData.size(); ++i ){
+    //     std::cout<<"status "<<clusterData[i].status<<"\n";
+    // }
 
     cv::Scalar colour  = cv::Scalar(0,0,255);
     for( int i = 0; i< finalContours.size(); i++ ){
@@ -709,11 +751,14 @@ int main(){
     }
 
     for(int i = 0; i <SIZE; ++i){
-        std::string str = std::to_string(markerIDs[i].id);
-        if(markerIDs[i].id != -1){
-            putText(drawing, str, markerIDs[i].position, cv::FONT_HERSHEY_SIMPLEX,1,cv::Scalar(0,0,0),2, cv::LINE_AA);
-        }
         circle(drawing, markerIDs[i].position, 30, cv::Scalar(0,0,0), 1, 8, 0 );
+    }
+
+    for(int i = 0; i < clusterData.size(); ++i){
+        if(clusterData[i].status == "detected"){
+            std::string str = std::to_string(clusterData[i].id);
+            putText(drawing, str, clusterData[i].position, cv::FONT_HERSHEY_SIMPLEX,1,cv::Scalar(0,0,0),2, cv::LINE_AA);
+        }
     }
 
 

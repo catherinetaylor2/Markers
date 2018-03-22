@@ -25,8 +25,6 @@ int getDifferentNumber(std::vector<int> currentValues, int max){
 }
 
 bool testUnique(std::vector<std::vector<int> > previous, std::vector<int> current){
-
-
     for(int i = 0; i < previous.size(); ++i){
         if(current == previous[i]){
             return false;
