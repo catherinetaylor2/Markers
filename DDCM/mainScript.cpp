@@ -22,6 +22,7 @@ public:
 	}
 	int dotNumber;
 	cv::Point2f position;
+    cv::Point2f dev;
     std::vector<int> votes;
     int id;
     int modeCount;
@@ -608,7 +609,7 @@ int main(){
     }
 
     std::vector<cv::Point2f> markerCentre (counter + 1);
-    cv::Point2f currentCentre; //contains centres of each cluster.
+    cv::Point2f currentCentre, currentDev; //contains centres of each cluster.
     int  markersSize;
     std::vector<DotCluster> markerIDs;
     DotCluster dotCluster;
@@ -617,16 +618,22 @@ int main(){
     }
     for(int i = 0; i < counter + 1; ++i){
         currentCentre = cv::Point2f(0.0f, 0.0f);
+        currentDev = cv::Point2f(0.0f, 0.0f);
         markersSize = markers[i].size();
         for(int j = 0; j < markersSize; ++j){
             currentCentre += final_mc[(markers[i])[j]];
+            currentDev += geometricDeviation[(markers[i])[j]];
         }
         currentCentre.x /= markersSize;
         currentCentre.y /= markersSize;
         markerCentre[i] = currentCentre;
 
+        currentDev.x /= markersSize;
+        currentDev.y /= markersSize;
+
         dotCluster.position = markerCentre[i];
         dotCluster.dotNumber = markersSize;
+        dotCluster.dev = currentDev;
         markerIDs.push_back(dotCluster);
     }
 
@@ -735,14 +742,15 @@ int main(){
             if(clusterData[ markerIDs[i].id -1].status == "lost"){
                 clusterData[ markerIDs[i].id-1].status = "detected";
                 clusterData[ markerIDs[i].id-1].velocity = cv::Point2f(0.0f, 0.0f);
+                clusterData[ markerIDs[i].id-1].deviation = markerIDs[i].dev;
             }
         }
         clusterData[ markerIDs[i].id-1].position = markerIDs[i].position;
+        clusterData[ markerIDs[i].id-1].deviation = markerIDs[i].dev;
     }
 
-
     // for(int i = 0; i < clusterData.size(); ++i ){
-    //     std::cout<<"status "<<clusterData[i].status<<"\n";
+    //     std::cout<<"status "<<clusterData[i].deviation.x<<"\n";
     // }
 
     cv::Scalar colour  = cv::Scalar(0,0,255);
