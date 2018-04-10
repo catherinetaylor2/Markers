@@ -313,78 +313,157 @@ int main(int argc, char* argv[] ){
             }
         }
         //width torus connections
-        for(int i = 0; i < gridHeight - 4; ++i){
-            int n = gridWidth - 1;
-            tempID.clear();
-            tempCluster.clear();
+        for(int i = 0; i < gridHeight; ++i){
+            if(gridWidth%2 ==0){
+                int n = gridWidth - 1;
+                tempID.clear();
+                tempCluster.clear();
 
-            index = i*gridWidth;
-            tempID.push_back(index + 1);
-            tempCluster.push_back(outputPattern[index]);
+                index = i*gridWidth;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
 
-            index = (i+2)*gridWidth;
-            tempID.push_back(index + 1);
-            tempCluster.push_back(outputPattern[index]);
+                index = ((i+2)%gridHeight)*gridWidth;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
 
-            index = (i+4)*gridWidth;
-            tempID.push_back(index + 1);
-            tempCluster.push_back(outputPattern[index]);
+                index = ((i+4)%gridHeight)*gridWidth;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
 
-            index = (i+3)*gridWidth + n;
-            tempID.push_back(index + 1);
-            tempCluster.push_back(outputPattern[index]);
+                index = ((i+3)%gridHeight)*gridWidth + n;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
 
-            index = (i+2)*gridWidth + (n-1);
-            tempID.push_back(index + 1);
-            tempCluster.push_back(outputPattern[index]);
+                index = ((i+2)%gridHeight)*gridWidth + (n-1);
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
 
-            index = (i+1)*gridWidth + n;
-            tempID.push_back(index + 1);
-            tempCluster.push_back(outputPattern[index]);
+                index = ((i+1)%gridHeight)*gridWidth + n;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
 
-            IDS.push_back(tempID);
-            clusters.push_back(tempCluster);
-            std::sort(tempCluster.begin(), tempCluster.end());
-            unique = testUnique(sortedMarkers, tempCluster);
-            sortedMarkers.push_back(tempCluster);
+                IDS.push_back(tempID);
+                clusters.push_back(tempCluster);
+                std::sort(tempCluster.begin(), tempCluster.end());
+                unique = testUnique(sortedMarkers, tempCluster);
+                sortedMarkers.push_back(tempCluster);
+            }
             
         }
 
-         for(int i = 1; i < gridHeight - 2; ++i){
-            int n = gridWidth - 1;
+         for(int i = 1; i < gridHeight; ++i){
+             if(gridWidth%2 == 0){
+                int n = gridWidth - 1;
+                tempID.clear();
+                tempCluster.clear();
+
+                index = i*gridWidth;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
+
+                index = ((i+1)%gridHeight)*gridWidth + n;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
+
+                index = ((i+2)%gridHeight)*gridWidth + (n-1);
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
+
+                index = (i)*gridWidth + (n-1);
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
+
+                index = ((i-2)%gridHeight)*gridWidth + (n-1);
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
+
+                index = ((i-1)%gridHeight)*gridWidth + n;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
+
+                IDS.push_back(tempID);
+                clusters.push_back(tempCluster);
+                std::sort(tempCluster.begin(), tempCluster.end());
+                unique = testUnique(sortedMarkers, tempCluster);
+                sortedMarkers.push_back(tempCluster);
+             }
+            
+        }
+        //height "torus connections"
+        for(int i = 0; i < gridWidth ; ++i){
+            int n = gridHeight - 1;
+            tempID.clear();
+            tempCluster.clear();
+            if(gridHeight%2 == 0){
+                index = i;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
+
+                index = (i + 1)%gridWidth + n*gridWidth;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
+
+                index = (i + 2)%gridWidth + (n-1)*gridWidth;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
+
+                index = (i + 3)%gridWidth + n*gridWidth;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
+
+                index = (i + 4)%gridWidth;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
+
+                index = (i + 2)%gridWidth;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
+
+                IDS.push_back(tempID);
+                clusters.push_back(tempCluster);
+                std::sort(tempCluster.begin(), tempCluster.end());
+                unique = testUnique(sortedMarkers, tempCluster);
+                sortedMarkers.push_back(tempCluster);
+
+            }
+        }
+         for(int i = 0; i < gridWidth; ++i){
+            int n = gridHeight - 1;
             tempID.clear();
             tempCluster.clear();
 
-            index = i*gridWidth;
-            tempID.push_back(index + 1);
-            tempCluster.push_back(outputPattern[index]);
+            if(gridHeight%2 == 0){
+                index = i;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
 
-            index = (i+1)*gridWidth + n;
-            tempID.push_back(index + 1);
-            tempCluster.push_back(outputPattern[index]);
+                index = (i - 1)%gridWidth + n*gridWidth;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
 
-            index = (i+2)*gridWidth + (n-1);
-            tempID.push_back(index + 1);
-            tempCluster.push_back(outputPattern[index]);
+                index = (i - 2)%gridWidth + (n-1)*gridWidth;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
 
-            index = (i)*gridWidth + (n-1);
-            tempID.push_back(index + 1);
-            tempCluster.push_back(outputPattern[index]);
+                index = i%gridWidth + (n-1)*gridWidth;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
 
-            index = (i-2)*gridWidth + (n-1);
-            tempID.push_back(index + 1);
-            tempCluster.push_back(outputPattern[index]);
+                index = (i + 2)%gridWidth + (n-1)*gridWidth;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
 
-            index = (i-1)*gridWidth + n;
-            tempID.push_back(index + 1);
-            tempCluster.push_back(outputPattern[index]);
+                index = (i - 1)%gridWidth + n*gridWidth;
+                tempID.push_back(index + 1);
+                tempCluster.push_back(outputPattern[index]);
 
-            IDS.push_back(tempID);
-            clusters.push_back(tempCluster);
-            std::sort(tempCluster.begin(), tempCluster.end());
-            unique = testUnique(sortedMarkers, tempCluster);
-            sortedMarkers.push_back(tempCluster);
-            
+                IDS.push_back(tempID);
+                clusters.push_back(tempCluster);
+                std::sort(tempCluster.begin(), tempCluster.end());
+                unique = testUnique(sortedMarkers, tempCluster);
+                sortedMarkers.push_back(tempCluster);
+            }
         }
 
         if(unique){

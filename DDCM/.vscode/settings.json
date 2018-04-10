@@ -46,6 +46,7 @@
         "scoped_allocator": "cpp",
         "sstream": "cpp",
         "streambuf": "cpp",
-        "typeindex": "cpp"
+        "typeindex": "cpp",
+        "*.ipp": "cpp"
     }
 }

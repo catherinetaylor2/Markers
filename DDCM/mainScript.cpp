@@ -568,7 +568,7 @@ int main(){
                 Eccentricity = ((mu[gridIndex].mu20 - mu[gridIndex].mu02)*(mu[gridIndex].mu20 - mu[gridIndex].mu02) + 4*mu[gridIndex].mu11*mu[gridIndex].mu11)/((mu[gridIndex].mu20 + mu[gridIndex].mu02)*(mu[gridIndex].mu20 + mu[gridIndex].mu02));
                 if(Eccentricity < eMax){
                     GeometricDeviation = cv::Point2f( sqrt(mu[i].mu20 / mu[i].m00), sqrt(mu[i].mu02 / mu[i].m00));
-                    std::cout<<"X "<<GeometricDeviation.x<<" Y "<<GeometricDeviation.y<<"\n";
+                   // std::cout<<"X "<<GeometricDeviation.x<<" Y "<<GeometricDeviation.y<<"\n";
                     geometricDeviation.push_back(GeometricDeviation);
                     finalContours.push_back(contoursThresh[gridIndex]);
                     eccentricty.push_back(Eccentricity);
